@@ -1,0 +1,16 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# PyMTL3 / Hardware Simulation
+*.vcd
+*.gtkw
+obj_dir/
+*.bak
+
+# Git / OS
+.DS_Store
+.idea/
+.vscode/
