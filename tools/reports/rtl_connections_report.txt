@@ -1,0 +1,161 @@
+RTL CONNECTION REPORT
+================================================================================
+
+TOP MODULE CANDIDATES
+--------------------------------------------------------------------------------
+- tb_bpf
+- tb_div
+- tb_lcd
+- tb_pcap
+- tb_shift
+
+MODULES
+--------------------------------------------------------------------------------
+m_i2c_slave
+  file: /home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/m_i2c_slave.v
+  instantiates: 0
+
+pcap2rgmii
+  file: /home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/pcap_utils.v
+  instantiates: 0
+
+tb_bpf
+  file: /home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_bpf_single_filter.v
+  instantiates: 0
+
+tb_div
+  file: /home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_div.v
+  instantiates: 0
+
+tb_lcd
+  file: /home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_lcd.v
+  instantiates: 4
+    - tb_i2c_slave_27: m_i2c_slave
+    - tb_i2c_slave_78: m_i2c_slave
+    - seq_lcd_i2c_slave: m_i2c_slave
+    - lcd_i2c_slave: m_i2c_slave
+
+tb_pcap
+  file: /home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_pcap.v
+  instantiates: 1
+    - pcap2rgmii: pcap2rgmii
+
+tb_shift
+  file: /home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_shift.v
+  instantiates: 0
+
+PARENT -> CHILD CONNECTIONS
+--------------------------------------------------------------------------------
+tb_lcd --> m_i2c_slave  (instance: tb_i2c_slave_27)
+    .clk(eclk)
+    .reset(reset)
+    .scl(tb_scl)
+    .sda(tb_sda)
+
+tb_lcd --> m_i2c_slave  (instance: tb_i2c_slave_78)
+    .clk(eclk)
+    .reset(reset)
+    .scl(tb_scl)
+    .sda(tb_sda)
+
+tb_lcd --> m_i2c_slave  (instance: seq_lcd_i2c_slave)
+    .clk(eclk)
+    .reset(reset)
+    .scl(seq_lcd_scl)
+    .sda(seq_lcd_sda)
+
+tb_lcd --> m_i2c_slave  (instance: lcd_i2c_slave)
+    .clk(eclk)
+    .reset(reset)
+    .scl(lcd_scl)
+    .sda(lcd_sda)
+
+tb_pcap --> pcap2rgmii  (instance: pcap2rgmii)
+    .reset(reset)
+    .rx_clk(rx_clk)
+    .rxd(rxd)
+    .rx_dv(rx_dv)
+    .rx_er(rx_er)
+    .sop(sop)
+    .eop(eop)
+    .eth_speed(eth_speed)
+    .len(len)
+    .ipg_len(ipg_len)
+    .gen_err(gen_err)
+    .start(start)
+    .done(done)
+    .fname(fname)
+
+SIGNAL USAGE SUMMARY
+--------------------------------------------------------------------------------
+done
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .done
+
+eclk
+  - tb_lcd -> m_i2c_slave:tb_i2c_slave_27 .clk
+  - tb_lcd -> m_i2c_slave:tb_i2c_slave_78 .clk
+  - tb_lcd -> m_i2c_slave:seq_lcd_i2c_slave .clk
+  - tb_lcd -> m_i2c_slave:lcd_i2c_slave .clk
+
+eop
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .eop
+
+eth_speed
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .eth_speed
+
+fname
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .fname
+
+gen_err
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .gen_err
+
+ipg_len
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .ipg_len
+
+lcd_scl
+  - tb_lcd -> m_i2c_slave:lcd_i2c_slave .scl
+
+lcd_sda
+  - tb_lcd -> m_i2c_slave:lcd_i2c_slave .sda
+
+len
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .len
+
+reset
+  - tb_lcd -> m_i2c_slave:tb_i2c_slave_27 .reset
+  - tb_lcd -> m_i2c_slave:tb_i2c_slave_78 .reset
+  - tb_lcd -> m_i2c_slave:seq_lcd_i2c_slave .reset
+  - tb_lcd -> m_i2c_slave:lcd_i2c_slave .reset
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .reset
+
+rx_clk
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .rx_clk
+
+rx_dv
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .rx_dv
+
+rx_er
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .rx_er
+
+rxd
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .rxd
+
+seq_lcd_scl
+  - tb_lcd -> m_i2c_slave:seq_lcd_i2c_slave .scl
+
+seq_lcd_sda
+  - tb_lcd -> m_i2c_slave:seq_lcd_i2c_slave .sda
+
+sop
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .sop
+
+start
+  - tb_pcap -> pcap2rgmii:pcap2rgmii .start
+
+tb_scl
+  - tb_lcd -> m_i2c_slave:tb_i2c_slave_27 .scl
+  - tb_lcd -> m_i2c_slave:tb_i2c_slave_78 .scl
+
+tb_sda
+  - tb_lcd -> m_i2c_slave:tb_i2c_slave_27 .sda
+  - tb_lcd -> m_i2c_slave:tb_i2c_slave_78 .sda

@@ -1,0 +1,572 @@
+{
+  "top_modules": [
+    "tb_bpf",
+    "tb_div",
+    "tb_lcd",
+    "tb_pcap",
+    "tb_shift"
+  ],
+  "modules": {
+    "m_i2c_slave": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/m_i2c_slave.v",
+      "instances": []
+    },
+    "pcap2rgmii": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/pcap_utils.v",
+      "instances": []
+    },
+    "tb_bpf": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_bpf_single_filter.v",
+      "instances": []
+    },
+    "tb_div": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_div.v",
+      "instances": []
+    },
+    "tb_lcd": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_lcd.v",
+      "instances": [
+        {
+          "module_type": "m_i2c_slave",
+          "instance_name": "tb_i2c_slave_27",
+          "connections": [
+            {
+              "port": "clk",
+              "signal": "eclk"
+            },
+            {
+              "port": "reset",
+              "signal": "reset"
+            },
+            {
+              "port": "scl",
+              "signal": "tb_scl"
+            },
+            {
+              "port": "sda",
+              "signal": "tb_sda"
+            }
+          ]
+        },
+        {
+          "module_type": "m_i2c_slave",
+          "instance_name": "tb_i2c_slave_78",
+          "connections": [
+            {
+              "port": "clk",
+              "signal": "eclk"
+            },
+            {
+              "port": "reset",
+              "signal": "reset"
+            },
+            {
+              "port": "scl",
+              "signal": "tb_scl"
+            },
+            {
+              "port": "sda",
+              "signal": "tb_sda"
+            }
+          ]
+        },
+        {
+          "module_type": "m_i2c_slave",
+          "instance_name": "seq_lcd_i2c_slave",
+          "connections": [
+            {
+              "port": "clk",
+              "signal": "eclk"
+            },
+            {
+              "port": "reset",
+              "signal": "reset"
+            },
+            {
+              "port": "scl",
+              "signal": "seq_lcd_scl"
+            },
+            {
+              "port": "sda",
+              "signal": "seq_lcd_sda"
+            }
+          ]
+        },
+        {
+          "module_type": "m_i2c_slave",
+          "instance_name": "lcd_i2c_slave",
+          "connections": [
+            {
+              "port": "clk",
+              "signal": "eclk"
+            },
+            {
+              "port": "reset",
+              "signal": "reset"
+            },
+            {
+              "port": "scl",
+              "signal": "lcd_scl"
+            },
+            {
+              "port": "sda",
+              "signal": "lcd_sda"
+            }
+          ]
+        }
+      ]
+    },
+    "tb_pcap": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_pcap.v",
+      "instances": [
+        {
+          "module_type": "pcap2rgmii",
+          "instance_name": "pcap2rgmii",
+          "connections": [
+            {
+              "port": "reset",
+              "signal": "reset"
+            },
+            {
+              "port": "rx_clk",
+              "signal": "rx_clk"
+            },
+            {
+              "port": "rxd",
+              "signal": "rxd"
+            },
+            {
+              "port": "rx_dv",
+              "signal": "rx_dv"
+            },
+            {
+              "port": "rx_er",
+              "signal": "rx_er"
+            },
+            {
+              "port": "sop",
+              "signal": "sop"
+            },
+            {
+              "port": "eop",
+              "signal": "eop"
+            },
+            {
+              "port": "eth_speed",
+              "signal": "eth_speed"
+            },
+            {
+              "port": "len",
+              "signal": "len"
+            },
+            {
+              "port": "ipg_len",
+              "signal": "ipg_len"
+            },
+            {
+              "port": "gen_err",
+              "signal": "gen_err"
+            },
+            {
+              "port": "start",
+              "signal": "start"
+            },
+            {
+              "port": "done",
+              "signal": "done"
+            },
+            {
+              "port": "fname",
+              "signal": "fname"
+            }
+          ]
+        }
+      ]
+    },
+    "tb_shift": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_shift.v",
+      "instances": []
+    }
+  },
+  "edges": [
+    {
+      "parent": "tb_lcd",
+      "child": "m_i2c_slave",
+      "instance": "tb_i2c_slave_27",
+      "connections": [
+        {
+          "port": "clk",
+          "signal": "eclk"
+        },
+        {
+          "port": "reset",
+          "signal": "reset"
+        },
+        {
+          "port": "scl",
+          "signal": "tb_scl"
+        },
+        {
+          "port": "sda",
+          "signal": "tb_sda"
+        }
+      ]
+    },
+    {
+      "parent": "tb_lcd",
+      "child": "m_i2c_slave",
+      "instance": "tb_i2c_slave_78",
+      "connections": [
+        {
+          "port": "clk",
+          "signal": "eclk"
+        },
+        {
+          "port": "reset",
+          "signal": "reset"
+        },
+        {
+          "port": "scl",
+          "signal": "tb_scl"
+        },
+        {
+          "port": "sda",
+          "signal": "tb_sda"
+        }
+      ]
+    },
+    {
+      "parent": "tb_lcd",
+      "child": "m_i2c_slave",
+      "instance": "seq_lcd_i2c_slave",
+      "connections": [
+        {
+          "port": "clk",
+          "signal": "eclk"
+        },
+        {
+          "port": "reset",
+          "signal": "reset"
+        },
+        {
+          "port": "scl",
+          "signal": "seq_lcd_scl"
+        },
+        {
+          "port": "sda",
+          "signal": "seq_lcd_sda"
+        }
+      ]
+    },
+    {
+      "parent": "tb_lcd",
+      "child": "m_i2c_slave",
+      "instance": "lcd_i2c_slave",
+      "connections": [
+        {
+          "port": "clk",
+          "signal": "eclk"
+        },
+        {
+          "port": "reset",
+          "signal": "reset"
+        },
+        {
+          "port": "scl",
+          "signal": "lcd_scl"
+        },
+        {
+          "port": "sda",
+          "signal": "lcd_sda"
+        }
+      ]
+    },
+    {
+      "parent": "tb_pcap",
+      "child": "pcap2rgmii",
+      "instance": "pcap2rgmii",
+      "connections": [
+        {
+          "port": "reset",
+          "signal": "reset"
+        },
+        {
+          "port": "rx_clk",
+          "signal": "rx_clk"
+        },
+        {
+          "port": "rxd",
+          "signal": "rxd"
+        },
+        {
+          "port": "rx_dv",
+          "signal": "rx_dv"
+        },
+        {
+          "port": "rx_er",
+          "signal": "rx_er"
+        },
+        {
+          "port": "sop",
+          "signal": "sop"
+        },
+        {
+          "port": "eop",
+          "signal": "eop"
+        },
+        {
+          "port": "eth_speed",
+          "signal": "eth_speed"
+        },
+        {
+          "port": "len",
+          "signal": "len"
+        },
+        {
+          "port": "ipg_len",
+          "signal": "ipg_len"
+        },
+        {
+          "port": "gen_err",
+          "signal": "gen_err"
+        },
+        {
+          "port": "start",
+          "signal": "start"
+        },
+        {
+          "port": "done",
+          "signal": "done"
+        },
+        {
+          "port": "fname",
+          "signal": "fname"
+        }
+      ]
+    }
+  ],
+  "signal_usage": {
+    "done": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "done"
+      }
+    ],
+    "eclk": [
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "tb_i2c_slave_27",
+        "port": "clk"
+      },
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "tb_i2c_slave_78",
+        "port": "clk"
+      },
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "seq_lcd_i2c_slave",
+        "port": "clk"
+      },
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "lcd_i2c_slave",
+        "port": "clk"
+      }
+    ],
+    "eop": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "eop"
+      }
+    ],
+    "eth_speed": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "eth_speed"
+      }
+    ],
+    "fname": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "fname"
+      }
+    ],
+    "gen_err": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "gen_err"
+      }
+    ],
+    "ipg_len": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "ipg_len"
+      }
+    ],
+    "lcd_scl": [
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "lcd_i2c_slave",
+        "port": "scl"
+      }
+    ],
+    "lcd_sda": [
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "lcd_i2c_slave",
+        "port": "sda"
+      }
+    ],
+    "len": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "len"
+      }
+    ],
+    "reset": [
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "tb_i2c_slave_27",
+        "port": "reset"
+      },
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "tb_i2c_slave_78",
+        "port": "reset"
+      },
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "seq_lcd_i2c_slave",
+        "port": "reset"
+      },
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "lcd_i2c_slave",
+        "port": "reset"
+      },
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "reset"
+      }
+    ],
+    "rx_clk": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "rx_clk"
+      }
+    ],
+    "rx_dv": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "rx_dv"
+      }
+    ],
+    "rx_er": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "rx_er"
+      }
+    ],
+    "rxd": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "rxd"
+      }
+    ],
+    "seq_lcd_scl": [
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "seq_lcd_i2c_slave",
+        "port": "scl"
+      }
+    ],
+    "seq_lcd_sda": [
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "seq_lcd_i2c_slave",
+        "port": "sda"
+      }
+    ],
+    "sop": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "sop"
+      }
+    ],
+    "start": [
+      {
+        "parent_module": "tb_pcap",
+        "child_module": "pcap2rgmii",
+        "instance_name": "pcap2rgmii",
+        "port": "start"
+      }
+    ],
+    "tb_scl": [
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "tb_i2c_slave_27",
+        "port": "scl"
+      },
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "tb_i2c_slave_78",
+        "port": "scl"
+      }
+    ],
+    "tb_sda": [
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "tb_i2c_slave_27",
+        "port": "sda"
+      },
+      {
+        "parent_module": "tb_lcd",
+        "child_module": "m_i2c_slave",
+        "instance_name": "tb_i2c_slave_78",
+        "port": "sda"
+      }
+    ]
+  }
+}
