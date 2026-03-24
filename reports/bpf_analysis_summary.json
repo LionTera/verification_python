@@ -1,0 +1,2329 @@
+{
+  "rtl_modules": {
+    "bpf_control": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_control.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_enb",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_start",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_start_addr",
+          "width": "[BPF_IRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_return",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_active",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_iram_raddr",
+          "width": "[BPF_IRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_iram_rdata",
+          "width": "[63:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_iram_rd",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_acc",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pc",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_s1_stall",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_s2_stall",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_eop_fault",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_div_0",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_eq_0",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_negative",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_access_len",
+          "width": "[2:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ld_acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ldh_acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ldb_acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ld_x",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_st_acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_st_x",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_st_sc_ind",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_k",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_0",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_a_mode_k",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_a_mode_x_k",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_a_mode_sc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_a_mode_sc_ind",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_op",
+          "width": "[3:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_in_k",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_in_x",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_shift",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_mul",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_div",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_imm",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_plen",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_sc_pad",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_pmem",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_pmem_4lsb",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_alu",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_acc2x",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_x2acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_pc2acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_k_s1",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_k_s2",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_k_s3",
+          "width": "[31:0]"
+        }
+      ],
+      "instantiates": []
+    },
+    "bpf_div": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_div.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "start",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "x",
+          "width": "[W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "y",
+          "width": "[W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "q",
+          "width": "[W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "r",
+          "width": "[W-1:0]"
+        }
+      ],
+      "instantiates": []
+    },
+    "bpf_dp": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_dp.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_start",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_packet_len",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_accept",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_value",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_a",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_b",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_rdata_a",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_rdata_b",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_rd_a",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_rd_b",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sram_raddr",
+          "width": "[BPF_SRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sram_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sram_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sram_waddr",
+          "width": "[BPF_SRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sram_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sram_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_acc",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pc",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_s1_stall",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_s2_stall",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_eop_fault",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_div_0",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_eq_0",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_negative",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_rd",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_access_len",
+          "width": "[2:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ld_acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ldh_acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ldb_acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ld_x",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_st_acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_st_x",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_st_sc_ind",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ret_acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ret_k",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ret_0",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_a_mode_k",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_a_mode_x_k",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_a_mode_sc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_a_mode_sc_ind",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_op",
+          "width": "[3:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_in_k",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_in_x",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_shift",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_mul",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_div",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_imm",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_plen",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_sc_pad",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_pmem",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_pmem_4lsb",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_alu",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_acc2x",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_x2acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_pc2acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_k_s1",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_k_s2",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_k_s3",
+          "width": "[31:0]"
+        }
+      ],
+      "instantiates": [
+        [
+          "bpf_dp",
+          "bpf_shifter"
+        ],
+        [
+          "bpf_mult",
+          "bpf_mult"
+        ],
+        [
+          "bpf_div",
+          "bpf_div"
+        ]
+      ]
+    },
+    "bpf_env": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_env.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_enb",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_start",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_packet_len",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_return",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_accept",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_reject",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_packet_loss",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_value",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_addr",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_mmap_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_mmap_ack",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_waddr",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_raddr",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_rx",
+          "width": "[1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_bpf",
+          "width": "[1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_tx",
+          "width": "[1:0]"
+        }
+      ],
+      "instantiates": [
+        [
+          "bpf_env",
+          "bpf_npu"
+        ]
+      ]
+    },
+    "bpf_iram": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_iram.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "rd_clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "rd_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rd_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "wr_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "be",
+          "width": "1"
+        }
+      ],
+      "instantiates": []
+    },
+    "bpf_mult": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_mult.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "start",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "x",
+          "width": "[IN_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "y",
+          "width": "[IN_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "z",
+          "width": "[OUT_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "z_eq_0",
+          "width": "1"
+        }
+      ],
+      "instantiates": []
+    },
+    "bpf_npu": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_npu.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_enb",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_start",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_packet_len",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_return",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_accept",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_reject",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_packet_loss",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_value",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_addr",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_mmap_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_mmap_ack",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_waddr",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_raddr",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_rx",
+          "width": "[1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_bpf",
+          "width": "[1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_tx",
+          "width": "[1:0]"
+        }
+      ],
+      "instantiates": [
+        [
+          "bpf_npu",
+          "bpf_control"
+        ],
+        [
+          "bpf_dp",
+          "bpf_dp"
+        ],
+        [
+          "bpf_iram",
+          "bpf_iram"
+        ],
+        [
+          "bpf_sram",
+          "bpf_sram"
+        ],
+        [
+          "bpf_pram",
+          "bpf_pram_b0"
+        ],
+        [
+          "bpf_pram",
+          "bpf_pram_b1"
+        ],
+        [
+          "bpf_pram",
+          "bpf_pram_b2"
+        ]
+      ]
+    },
+    "bpf_pram": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_pram.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "rd_addr_a",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "rd_addr_b",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rd_data_a",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rd_data_b",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr",
+          "width": "1"
+        }
+      ],
+      "instantiates": []
+    },
+    "bpf_shifter": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_shift.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "start",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "x",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "y",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lrn",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "z",
+          "width": "[31:0]"
+        }
+      ],
+      "instantiates": []
+    },
+    "bpf_sram": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_sram.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "rd_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rd_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr",
+          "width": "1"
+        }
+      ],
+      "instantiates": []
+    },
+    "lcd_env": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_env.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_sda",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bcp_u2u_status",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_search",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_update",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_enable",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_addr",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_ack",
+          "width": "1"
+        }
+      ],
+      "instantiates": [
+        [
+          "lcd_env",
+          "lcd_sequencer"
+        ]
+      ]
+    },
+    "lcd_i2c_master": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_i2c_master.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "i2c_scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "i2c_sda",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "i2c_master_a",
+          "width": "[6:0]"
+        },
+        {
+          "direction": "input",
+          "name": "i2c_master_wd",
+          "width": "[7:0]"
+        },
+        {
+          "direction": "input",
+          "name": "i2c_master_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "i2c_master_done",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "i2c_master_ack",
+          "width": "1"
+        }
+      ],
+      "instantiates": []
+    },
+    "lcd_iram": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_iram.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "rd_clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "rd_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rd_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "wr_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "be",
+          "width": "1"
+        }
+      ],
+      "instantiates": []
+    },
+    "lcd_mpu": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_mpu.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_sda",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bcp_u2u_status",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_search",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_update",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_enable",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_active",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_return",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_ret_value",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_addr",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_ack",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_addr",
+          "width": "[7:0]"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_din",
+          "width": "[31:0]"
+        }
+      ],
+      "instantiates": [
+        [
+          "lcd_mpu",
+          "bpf_control"
+        ],
+        [
+          "bpf_dp",
+          "bpf_dp"
+        ],
+        [
+          "lcd_iram",
+          "lcd_iram"
+        ],
+        [
+          "bpf_sram",
+          "bpf_sram"
+        ],
+        [
+          "bpf_sram",
+          "u2u_s2u_ram"
+        ],
+        [
+          "lcd_i2c_master",
+          "lcd_i2c_master"
+        ]
+      ]
+    },
+    "lcd_mpu_env": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_mpu_env.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_sda",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bcp_u2u_status",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_search",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_update",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_enable",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_active",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_return",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_ret_value",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_addr",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_ack",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_addr",
+          "width": "[7:0]"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_din",
+          "width": "[31:0]"
+        }
+      ],
+      "instantiates": [
+        [
+          "lcd_mpu_env",
+          "lcd_mpu"
+        ]
+      ]
+    },
+    "lcd_sequencer": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_sequencer.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_sda",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bcp_u2u_status",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_search",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_update",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_enable",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_active",
+          "width": "1"
+        }
+      ],
+      "instantiates": [
+        [
+          "lcd_sequencer",
+          "lcd_i2c_master"
+        ],
+        [
+          "bpf_div",
+          "bpf_div"
+        ]
+      ]
+    }
+  },
+  "tb_modules": {
+    "m_i2c_slave": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/m_i2c_slave.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "sda",
+          "width": "1"
+        }
+      ],
+      "instantiates": []
+    },
+    "pcap2rgmii": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/pcap_utils.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "rx_clk",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "rxd",
+          "width": "[3:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rx_dv",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "rx_er",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "sop",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "eop",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "eth_speed",
+          "width": "[9:0]"
+        },
+        {
+          "direction": "output",
+          "name": "len",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "ipg_len",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "gen_err",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "start",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "done",
+          "width": "1"
+        }
+      ],
+      "instantiates": []
+    },
+    "tb_bpf": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_bpf_single_filter.v",
+      "ports": [],
+      "instantiates": []
+    },
+    "tb_div": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_div.v",
+      "ports": [],
+      "instantiates": []
+    },
+    "tb_lcd": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_lcd.v",
+      "ports": [],
+      "instantiates": [
+        [
+          "m_i2c_slave",
+          "tb_i2c_slave_27"
+        ],
+        [
+          "m_i2c_slave",
+          "tb_i2c_slave_78"
+        ],
+        [
+          "m_i2c_slave",
+          "seq_lcd_i2c_slave"
+        ],
+        [
+          "m_i2c_slave",
+          "lcd_i2c_slave"
+        ]
+      ]
+    },
+    "tb_pcap": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_pcap.v",
+      "ports": [],
+      "instantiates": [
+        [
+          "pcap2rgmii",
+          "pcap2rgmii"
+        ]
+      ]
+    },
+    "tb_shift": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/tb/tb_shift.v",
+      "ports": [],
+      "instantiates": []
+    }
+  },
+  "rtl_top_candidates": [
+    "bpf_control",
+    "bpf_shifter"
+  ],
+  "tb_summary": {
+    "dut_hits": [],
+    "dut_counter": {},
+    "likely_dut": null,
+    "tasks": {
+      "pcap2rgmii": [
+        "function:fcs_swap_invert"
+      ],
+      "tb_bpf": [
+        "init_instruction_mem",
+        "init_packet_mem",
+        "init_dut_signals",
+        "function:void",
+        "function:void"
+      ],
+      "tb_div": [
+        "function:void"
+      ],
+      "tb_lcd": [
+        "wait_scl",
+        "wait_half_scl",
+        "init_instruction_mem",
+        "run_test",
+        "function:void",
+        "function:void"
+      ],
+      "tb_pcap": [
+        "function:void"
+      ],
+      "tb_shift": [
+        "function:void"
+      ]
+    },
+    "file_io": {
+      "pcap2rgmii": [
+        "file/vector IO detected"
+      ],
+      "tb_bpf": [
+        "file/vector IO detected"
+      ],
+      "tb_lcd": [
+        "file/vector IO detected"
+      ]
+    },
+    "packet_lines": {
+      "m_i2c_slave": [
+        [
+          5,
+          "// Description: write only i2c model                                        //"
+        ],
+        [
+          42,
+          "reg  [7:0] data;       // received i2c data"
+        ],
+        [
+          53,
+          "`define S_I2C_DATA  4'd5"
+        ],
+        [
+          54,
+          "`define S_I2C_DACK  4'd6      // data phase ack"
+        ],
+        [
+          63,
+          "        data      <= 8'd0;"
+        ],
+        [
+          97,
+          "                    if (addr == I2C_ADDR) begin  // address match, goto ack"
+        ],
+        [
+          100,
+          "                        i2c_state <= `S_I2C_IDLE;     // address mismatch, stop"
+        ],
+        [
+          103,
+          "                    //      $display(\"i2c %02x mon rd: mismatch addr %02x\",I2C_ADDR,addr);"
+        ],
+        [
+          105,
+          "                    //      $display(\"i2c %02x mon wr: mismatch addr %02x\",I2C_ADDR,addr);"
+        ],
+        [
+          118,
+          "                    i2c_state <= `S_I2C_DATA;"
+        ],
+        [
+          128,
+          "            `S_I2C_DATA: begin"
+        ],
+        [
+          131,
+          "                    data      <= sreg;                // get data"
+        ],
+        [
+          135,
+          "                    i2c_state <= `S_I2C_DATA;"
+        ],
+        [
+          159,
+          "                      $display(\"i2c %02x mon read : addr %02x, data %02x\","
+        ],
+        [
+          160,
+          "                          I2C_ADDR, addr, data);"
+        ],
+        [
+          162,
+          "                      $display(\"i2c %02x mon write: addr %02x, data %02x\","
+        ],
+        [
+          163,
+          "                          I2C_ADDR, addr, data);"
+        ],
+        [
+          229,
+          "// address and data bit counter"
+        ],
+        [
+          258,
+          "        `S_I2C_DATA : i2c_state_str = \"DATA\";"
+        ]
+      ],
+      "pcap2rgmii": [
+        [
+          5,
+          "// Description:                                                               //"
+        ],
+        [
+          16,
+          "// File Header"
+        ],
+        [
+          29,
+          "// 16 |                            SnapLen                            |"
+        ],
+        [
+          35,
+          "// Packet Record"
+        ],
+        [
+          44,
+          "//  8 |                    Captured Packet Length                     |"
+        ],
+        [
+          46,
+          "// 12 |                    Original Packet Length                     |"
+        ],
+        [
+          49,
+          "//    /                          Packet Data                          /"
+        ],
+        [
+          50,
+          "//    /                        variable length                        /"
+        ],
+        [
+          59,
+          "    parameter preamble_len = 16,"
+        ],
+        [
+          67,
+          "    output reg        sop,       // pulse with first character"
+        ],
+        [
+          68,
+          "    output            eop,       // pulse with last  character"
+        ],
+        [
+          70,
+          "    output reg [15:0] len,       // payload length"
+        ],
+        [
+          71,
+          "    input      [15:0] ipg_len,   // inter packet gap (delay after CRC)"
+        ],
+        [
+          82,
+          "// pcap packet buffers"
+        ],
+        [
+          83,
+          "reg    [7:0] f_hdr [0:23];   // pcap file header"
+        ],
+        [
+          84,
+          "reg    [7:0] p_hdr [0:15];   // packet header"
+        ],
+        [
+          92,
+          "integer      cap_length;     // blocking: captured packet length in bytes"
+        ],
+        [
+          93,
+          "integer      org_length;     // blocking: original length in bytes"
+        ],
+        [
+          98,
+          "        $display(\"pcap filename not set\");"
+        ],
+        [
+          108,
+          "    // read file header"
+        ],
+        [
+          109,
+          "    rc = $fread(f_hdr,fd);"
+        ],
+        [
+          111,
+          "    // check magic signature to determine byte ordering"
+        ],
+        [
+          112,
+          "    if (f_hdr[0] == 8'hD4 && f_hdr[1] == 8'hC3 && f_hdr[2] == 8'hB2) begin"
+        ],
+        [
+          116,
+          "    end else if (f_hdr[0] == 8'hA1 && f_hdr[1] == 8'hB2 && f_hdr[2] == 8'hC3) begin"
+        ],
+        [
+          120,
+          "    end else if (f_hdr[0] == 8'h4D && f_hdr[1] == 8'h3C && f_hdr[2] == 8'hb2) begin"
+        ]
+      ],
+      "tb_bpf": [
+        [
+          49,
+          "integer tb_packet_length;"
+        ],
+        [
+          50,
+          "integer tb_inst_length;"
+        ],
+        [
+          56,
+          "reg     [7:0] tb_pram [0:(1 << BPF_PRAM_ADDR_W)-1];    // packet memory mirror"
+        ],
+        [
+          69,
+          "reg  [BPF_PRAM_ADDR_W-1:0] bpf_packet_len;"
+        ],
+        [
+          71,
+          "reg                        bpf_accept;       // accept/reject packet"
+        ],
+        [
+          76,
+          "reg                 [63:0] bpf_iram_wdata;"
+        ],
+        [
+          79,
+          "// packet storage - byte address"
+        ],
+        [
+          81,
+          "reg                 [31:0] bpf_pram_wdata;"
+        ],
+        [
+          113,
+          "    $display(\"    - packet length = %-d (0x%h)\", tb_packet_length, tb_packet_length);"
+        ],
+        [
+          116,
+          "    while (i < tb_packet_length) begin"
+        ],
+        [
+          126,
+          "    $display(\"    - program length = %-d\", tb_inst_length);"
+        ],
+        [
+          129,
+          "    while (i < tb_inst_length) begin"
+        ],
+        [
+          161,
+          "// initialize instruction memory with debug data"
+        ],
+        [
+          170,
+          "    // '-b' flag: bypass bpfc validation (allows more than 16 scratch pad words)"
+        ],
+        [
+          191,
+          "                    bpf_iram_wdata  = inst;"
+        ],
+        [
+          201,
+          "    tb_inst_length  = i;"
+        ],
+        [
+          205,
+          "// initialize packet memory with debug data"
+        ],
+        [
+          206,
+          "task init_packet_mem;"
+        ],
+        [
+          212,
+          "    tb_packet_length  = 132;"
+        ],
+        [
+          219,
+          "    while (i < tb_packet_length) begin"
+        ],
+        [
+          220,
+          "        bpf_pram_wdata  = {j, k+4'h3, j, k+4'h2, j, k+4'h1, j, k};"
+        ],
+        [
+          227,
+          "        tb_pram[i]    = bpf_pram_wdata[ 7: 0];"
+        ],
+        [
+          228,
+          "        tb_pram[i+1]  = bpf_pram_wdata[15: 8];"
+        ],
+        [
+          229,
+          "        tb_pram[i+2]  = bpf_pram_wdata[23:16];"
+        ],
+        [
+          230,
+          "        tb_pram[i+3]  = bpf_pram_wdata[31:24];"
+        ]
+      ],
+      "tb_lcd": [
+        [
+          70,
+          "reg   [7:0] tb_i2c_master_wd;   // i2c write data"
+        ],
+        [
+          78,
+          "reg   [7:0] tb_d;               // i2s write data"
+        ],
+        [
+          92,
+          "    tb_i2c_master_wd = 0;   // i2c write data"
+        ],
+        [
+          104,
+          "    // mismatched address"
+        ],
+        [
+          144,
+          "    // data phase"
+        ],
+        [
+          161,
+          "    //--- address mismatch"
+        ],
+        [
+          179,
+          "    //--- address mismatch"
+        ],
+        [
+          253,
+          "reg  [31:0] seq_lcd_mmap_wdata;  // memory mapped access"
+        ],
+        [
+          255,
+          "wire [31:0] seq_lcd_mmap_rdata;  // memory mapped access"
+        ],
+        [
+          266,
+          "reg         seq_data_dir_0to1;       // MAC0 to MAC1"
+        ],
+        [
+          267,
+          "reg         seq_data_dir_1to0;       // MAC1 to MAC0"
+        ],
+        [
+          268,
+          "reg   [8:1] seq_dipsw;               // top-left dipsw"
+        ],
+        [
+          275,
+          "    seq_data_dir_0to1,           // 1b  rp_con[11] direction left ->right"
+        ],
+        [
+          276,
+          "    seq_data_dir_1to0,           // 1b  rp_con[18] direction right->left"
+        ],
+        [
+          277,
+          "    seq_dipsw};                  // 8b  dipswitch status"
+        ],
+        [
+          285,
+          "    seq_data_dir_0to1       = 1'b0;   // MAC0 to MAC1"
+        ],
+        [
+          286,
+          "    seq_data_dir_1to0       = 1'b0;   // MAC1 to MAC0"
+        ],
+        [
+          287,
+          "    seq_dipsw               = 8'd0;   // top-left dipsw"
+        ],
+        [
+          293,
+          "    seq_lcd_mmap_wdata      = 0;"
+        ],
+        [
+          355,
+          "    .lcd_mmap_wdata (seq_lcd_mmap_wdata), // i"
+        ],
+        [
+          357,
+          "    .lcd_mmap_rdata (seq_lcd_mmap_rdata), // o"
+        ],
+        [
+          366,
+          "parameter LCD_PRAM_ADDR_W  = 14; // packet ram bank addr width (8b words, 3x16Kx8) not used"
+        ],
+        [
+          372,
+          "integer   tb_inst_length;"
+        ],
+        [
+          392,
+          "reg  [31:0] lcd_mmap_wdata;  // memory mapped access"
+        ],
+        [
+          394,
+          "wire [31:0] lcd_mmap_rdata;  // memory mapped access"
+        ]
+      ],
+      "tb_pcap": [
+        [
+          10,
+          "//string fname = \"tcp-4846-connect-disconnect.pcap\";"
+        ],
+        [
+          11,
+          "//string fname = \"tcp-9661-closed.pcap\";"
+        ],
+        [
+          20,
+          "wire        sop;"
+        ],
+        [
+          21,
+          "wire        eop;"
+        ],
+        [
+          23,
+          "wire [15:0] len;"
+        ],
+        [
+          24,
+          "wire [15:0] ipg_len;"
+        ],
+        [
+          35,
+          "wire [13:0] mon_prmble_len;     // length of preamble"
+        ],
+        [
+          38,
+          "wire [15:0] mon_len;            // Length of payload"
+        ],
+        [
+          39,
+          "wire [15:0] mon_frmtype;        // if non-null: type field instead length"
+        ],
+        [
+          47,
+          "wire        mon_len_err;"
+        ],
+        [
+          55,
+          "wire        mon_data_only;"
+        ],
+        [
+          67,
+          "wire        gen_sop;"
+        ],
+        [
+          68,
+          "wire        gen_eop;"
+        ],
+        [
+          74,
+          "integer     tb_mon_bytes;"
+        ],
+        [
+          75,
+          "reg         tb_mon_valid;"
+        ],
+        [
+          77,
+          "integer     tb_gen_bytes;"
+        ],
+        [
+          127,
+          "    tb_mon_bytes  = 0;"
+        ],
+        [
+          129,
+          "    tb_gen_bytes  = 0;"
+        ],
+        [
+          169,
+          "assign ipg_len            = 15'd8;"
+        ],
+        [
+          172,
+          "assign mon_data_only      = 1'b0;"
+        ],
+        [
+          191,
+          "        while (!eop && !done) @(posedge rx_clk);"
+        ],
+        [
+          193,
+          "        repeat (ipg_len+2) @(posedge rx_clk);"
+        ],
+        [
+          208,
+          "    .sop                (sop),                   // o"
+        ],
+        [
+          209,
+          "    .eop                (eop),                   // o"
+        ],
+        [
+          211,
+          "    .len                (len),                   // o"
+        ]
+      ]
+    }
+  },
+  "packet_info": {
+    "top_module": null,
+    "top_packet_ports": [],
+    "candidate_input_ports": [],
+    "candidate_output_ports": [],
+    "tb_drives": [],
+    "notes": [
+      "Could not infer RTL top module, so packet interface inference is limited."
+    ]
+  }
+}

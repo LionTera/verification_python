@@ -1,0 +1,17 @@
+flowchart TD
+    TOP["bpf_npu"]
+    CTRL["bpf_control"]
+    TOP --> CTRL
+    DP["bpf_dp"]
+    TOP --> DP
+    IRAM["bpf_iram"]
+    CTRL --> IRAM
+    CTRL --> DP
+    PRAM["bpf_pram"]
+    DP --> PRAM
+    SRAM["bpf_sram"]
+    DP --> SRAM
+    BPF_DIV["bpf_div"]
+    DP --> BPF_DIV
+    BPF_MULT["bpf_mult"]
+    DP --> BPF_MULT

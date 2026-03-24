@@ -1,0 +1,2079 @@
+{
+  "chosen_top": "bpf_control",
+  "top_candidates": [
+    [
+      "bpf_control",
+      110
+    ],
+    [
+      "bpf_dp",
+      86
+    ],
+    [
+      "bpf_npu",
+      75
+    ],
+    [
+      "bpf_shifter",
+      66
+    ],
+    [
+      "lcd_mpu",
+      56
+    ],
+    [
+      "bpf_env",
+      39
+    ],
+    [
+      "lcd_mpu_env",
+      26
+    ],
+    [
+      "lcd_env",
+      21
+    ],
+    [
+      "lcd_sequencer",
+      21
+    ],
+    [
+      "bpf_div",
+      16
+    ],
+    [
+      "bpf_iram",
+      16
+    ],
+    [
+      "bpf_mult",
+      16
+    ],
+    [
+      "bpf_pram",
+      16
+    ],
+    [
+      "bpf_sram",
+      14
+    ],
+    [
+      "lcd_i2c_master",
+      9
+    ],
+    [
+      "lcd_iram",
+      8
+    ]
+  ],
+  "modules": {
+    "bpf_control": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_control.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_enb",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_start",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_start_addr",
+          "width": "[BPF_IRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_return",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_active",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_iram_raddr",
+          "width": "[BPF_IRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_iram_rdata",
+          "width": "[63:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_iram_rd",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_acc",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pc",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_s1_stall",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_s2_stall",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_eop_fault",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_div_0",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_eq_0",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_negative",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_access_len",
+          "width": "[2:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ld_acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ldh_acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ldb_acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ld_x",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_st_acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_st_x",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_st_sc_ind",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_k",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_0",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_a_mode_k",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_a_mode_x_k",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_a_mode_sc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_a_mode_sc_ind",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_op",
+          "width": "[3:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_in_k",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_in_x",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_shift",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_mul",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_div",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_imm",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_plen",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_sc_pad",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_pmem",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_pmem_4lsb",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_alu",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_acc2x",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_x2acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sel_pc2acc",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_k_s1",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_k_s2",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_k_s3",
+          "width": "[31:0]"
+        }
+      ],
+      "instantiates": [],
+      "classification": {
+        "role": "match",
+        "role_scores": {
+          "parser": 0,
+          "match": 3,
+          "control": 2,
+          "action": 0,
+          "memory": 2,
+          "interface": 0
+        },
+        "packet_score": 3,
+        "decision_score": 0
+      }
+    },
+    "bpf_div": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_div.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "start",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "x",
+          "width": "[W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "y",
+          "width": "[W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "q",
+          "width": "[W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "r",
+          "width": "[W-1:0]"
+        }
+      ],
+      "instantiates": [],
+      "classification": {
+        "role": "unknown",
+        "role_scores": {
+          "parser": 0,
+          "match": 0,
+          "control": 0,
+          "action": 0,
+          "memory": 0,
+          "interface": 0
+        },
+        "packet_score": 0,
+        "decision_score": 0
+      }
+    },
+    "bpf_dp": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_dp.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_start",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_packet_len",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_accept",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_value",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_a",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_b",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_rdata_a",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_rdata_b",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_rd_a",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_rd_b",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sram_raddr",
+          "width": "[BPF_SRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sram_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sram_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sram_waddr",
+          "width": "[BPF_SRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sram_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_sram_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_acc",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pc",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_s1_stall",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_s2_stall",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_eop_fault",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_div_0",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_eq_0",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_alu_negative",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_rd",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_access_len",
+          "width": "[2:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ld_acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ldh_acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ldb_acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ld_x",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_st_acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_st_x",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_st_sc_ind",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ret_acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ret_k",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_ret_0",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_a_mode_k",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_a_mode_x_k",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_a_mode_sc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_a_mode_sc_ind",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_op",
+          "width": "[3:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_in_k",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_in_x",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_shift",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_mul",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_alu_div",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_imm",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_plen",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_sc_pad",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_pmem",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_pmem_4lsb",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_alu",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_acc2x",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_x2acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_sel_pc2acc",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_k_s1",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_k_s2",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_k_s3",
+          "width": "[31:0]"
+        }
+      ],
+      "instantiates": [
+        [
+          "bpf_dp",
+          "bpf_shifter"
+        ],
+        [
+          "bpf_mult",
+          "bpf_mult"
+        ],
+        [
+          "bpf_div",
+          "bpf_div"
+        ]
+      ],
+      "classification": {
+        "role": "match",
+        "role_scores": {
+          "parser": 1,
+          "match": 3,
+          "control": 1,
+          "action": 1,
+          "memory": 2,
+          "interface": 0
+        },
+        "packet_score": 4,
+        "decision_score": 1
+      }
+    },
+    "bpf_env": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_env.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_enb",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_start",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_packet_len",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_return",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_accept",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_reject",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_packet_loss",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_value",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_addr",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_mmap_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_mmap_ack",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_waddr",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_raddr",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_rx",
+          "width": "[1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_bpf",
+          "width": "[1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_tx",
+          "width": "[1:0]"
+        }
+      ],
+      "instantiates": [
+        [
+          "bpf_env",
+          "bpf_npu"
+        ]
+      ],
+      "classification": {
+        "role": "interface",
+        "role_scores": {
+          "parser": 1,
+          "match": 1,
+          "control": 0,
+          "action": 1,
+          "memory": 1,
+          "interface": 2
+        },
+        "packet_score": 3,
+        "decision_score": 1
+      }
+    },
+    "bpf_iram": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_iram.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "rd_clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "rd_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rd_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "wr_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "be",
+          "width": "1"
+        }
+      ],
+      "instantiates": [],
+      "classification": {
+        "role": "memory",
+        "role_scores": {
+          "parser": 0,
+          "match": 0,
+          "control": 0,
+          "action": 0,
+          "memory": 1,
+          "interface": 0
+        },
+        "packet_score": 1,
+        "decision_score": 0
+      }
+    },
+    "bpf_mult": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_mult.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "start",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "x",
+          "width": "[IN_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "y",
+          "width": "[IN_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "z",
+          "width": "[OUT_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "z_eq_0",
+          "width": "1"
+        }
+      ],
+      "instantiates": [],
+      "classification": {
+        "role": "match",
+        "role_scores": {
+          "parser": 0,
+          "match": 2,
+          "control": 0,
+          "action": 0,
+          "memory": 0,
+          "interface": 0
+        },
+        "packet_score": 0,
+        "decision_score": 0
+      }
+    },
+    "bpf_npu": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_npu.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_enb",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_start",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_packet_len",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_return",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_accept",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_reject",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_packet_loss",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_ret_value",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_addr",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_mmap_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_mmap_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_mmap_ack",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_waddr",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_raddr",
+          "width": "[BPF_PRAM_ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "bpf_pram_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_rx",
+          "width": "[1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_bpf",
+          "width": "[1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "bpf_pram_bank_tx",
+          "width": "[1:0]"
+        }
+      ],
+      "instantiates": [
+        [
+          "bpf_npu",
+          "bpf_control"
+        ],
+        [
+          "bpf_dp",
+          "bpf_dp"
+        ],
+        [
+          "bpf_iram",
+          "bpf_iram"
+        ],
+        [
+          "bpf_sram",
+          "bpf_sram"
+        ],
+        [
+          "bpf_pram",
+          "bpf_pram_b0"
+        ],
+        [
+          "bpf_pram",
+          "bpf_pram_b1"
+        ],
+        [
+          "bpf_pram",
+          "bpf_pram_b2"
+        ]
+      ],
+      "classification": {
+        "role": "interface",
+        "role_scores": {
+          "parser": 1,
+          "match": 1,
+          "control": 0,
+          "action": 1,
+          "memory": 1,
+          "interface": 2
+        },
+        "packet_score": 3,
+        "decision_score": 1
+      }
+    },
+    "bpf_pram": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_pram.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "rd_addr_a",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "rd_addr_b",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rd_data_a",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rd_data_b",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr",
+          "width": "1"
+        }
+      ],
+      "instantiates": [],
+      "classification": {
+        "role": "memory",
+        "role_scores": {
+          "parser": 0,
+          "match": 0,
+          "control": 0,
+          "action": 0,
+          "memory": 1,
+          "interface": 0
+        },
+        "packet_score": 1,
+        "decision_score": 0
+      }
+    },
+    "bpf_shifter": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_shift.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "start",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "x",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "y",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lrn",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "z",
+          "width": "[31:0]"
+        }
+      ],
+      "instantiates": [],
+      "classification": {
+        "role": "unknown",
+        "role_scores": {
+          "parser": 0,
+          "match": 0,
+          "control": 0,
+          "action": 0,
+          "memory": 0,
+          "interface": 0
+        },
+        "packet_score": 0,
+        "decision_score": 0
+      }
+    },
+    "bpf_sram": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/bpf_sram.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "rd_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rd_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr",
+          "width": "1"
+        }
+      ],
+      "instantiates": [],
+      "classification": {
+        "role": "memory",
+        "role_scores": {
+          "parser": 0,
+          "match": 0,
+          "control": 0,
+          "action": 0,
+          "memory": 1,
+          "interface": 0
+        },
+        "packet_score": 1,
+        "decision_score": 0
+      }
+    },
+    "lcd_env": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_env.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_sda",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bcp_u2u_status",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_search",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_update",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_enable",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_active",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_addr",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_ack",
+          "width": "1"
+        }
+      ],
+      "instantiates": [
+        [
+          "lcd_env",
+          "lcd_sequencer"
+        ]
+      ],
+      "classification": {
+        "role": "unknown",
+        "role_scores": {
+          "parser": 0,
+          "match": 0,
+          "control": 0,
+          "action": 0,
+          "memory": 0,
+          "interface": 0
+        },
+        "packet_score": 1,
+        "decision_score": 0
+      }
+    },
+    "lcd_i2c_master": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_i2c_master.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "i2c_scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "i2c_sda",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "i2c_master_a",
+          "width": "[6:0]"
+        },
+        {
+          "direction": "input",
+          "name": "i2c_master_wd",
+          "width": "[7:0]"
+        },
+        {
+          "direction": "input",
+          "name": "i2c_master_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "i2c_master_done",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "i2c_master_ack",
+          "width": "1"
+        }
+      ],
+      "instantiates": [],
+      "classification": {
+        "role": "unknown",
+        "role_scores": {
+          "parser": 0,
+          "match": 0,
+          "control": 0,
+          "action": 0,
+          "memory": 0,
+          "interface": 0
+        },
+        "packet_score": 0,
+        "decision_score": 0
+      }
+    },
+    "lcd_iram": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_iram.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "rd_clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "rd_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "output",
+          "name": "rd_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "wr_addr",
+          "width": "[ADDR_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr_data",
+          "width": "[DATA_W-1:0]"
+        },
+        {
+          "direction": "input",
+          "name": "wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "be",
+          "width": "1"
+        }
+      ],
+      "instantiates": [],
+      "classification": {
+        "role": "memory",
+        "role_scores": {
+          "parser": 0,
+          "match": 0,
+          "control": 0,
+          "action": 0,
+          "memory": 1,
+          "interface": 0
+        },
+        "packet_score": 1,
+        "decision_score": 0
+      }
+    },
+    "lcd_mpu": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_mpu.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_sda",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bcp_u2u_status",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_search",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_update",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_enable",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_active",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_return",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_ret_value",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_addr",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_ack",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_addr",
+          "width": "[7:0]"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_din",
+          "width": "[31:0]"
+        }
+      ],
+      "instantiates": [
+        [
+          "lcd_mpu",
+          "bpf_control"
+        ],
+        [
+          "bpf_dp",
+          "bpf_dp"
+        ],
+        [
+          "lcd_iram",
+          "lcd_iram"
+        ],
+        [
+          "bpf_sram",
+          "bpf_sram"
+        ],
+        [
+          "bpf_sram",
+          "u2u_s2u_ram"
+        ],
+        [
+          "lcd_i2c_master",
+          "lcd_i2c_master"
+        ]
+      ],
+      "classification": {
+        "role": "match",
+        "role_scores": {
+          "parser": 0,
+          "match": 1,
+          "control": 0,
+          "action": 0,
+          "memory": 1,
+          "interface": 0
+        },
+        "packet_score": 1,
+        "decision_score": 0
+      }
+    },
+    "lcd_mpu_env": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_mpu_env.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_sda",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bcp_u2u_status",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_search",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_update",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_enable",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_active",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_return",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_ret_value",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_addr",
+          "width": "[15:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_wr",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_rdata",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_mmap_rd",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_mmap_ack",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_wr",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_addr",
+          "width": "[7:0]"
+        },
+        {
+          "direction": "input",
+          "name": "s2u_din",
+          "width": "[31:0]"
+        }
+      ],
+      "instantiates": [
+        [
+          "lcd_mpu_env",
+          "lcd_mpu"
+        ]
+      ],
+      "classification": {
+        "role": "match",
+        "role_scores": {
+          "parser": 0,
+          "match": 1,
+          "control": 0,
+          "action": 0,
+          "memory": 0,
+          "interface": 0
+        },
+        "packet_score": 1,
+        "decision_score": 0
+      }
+    },
+    "lcd_sequencer": {
+      "file": "/home/lion/verification_python/bpf_test/u2u_v401/tf_bpf/rtl/lcd_sequencer.v",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "clk",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "reset",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_scl",
+          "width": "1"
+        },
+        {
+          "direction": "inout",
+          "name": "lcd_sda",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "bcp_u2u_status",
+          "width": "[31:0]"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_search",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_update",
+          "width": "1"
+        },
+        {
+          "direction": "input",
+          "name": "lcd_enable",
+          "width": "1"
+        },
+        {
+          "direction": "output",
+          "name": "lcd_active",
+          "width": "1"
+        }
+      ],
+      "instantiates": [
+        [
+          "lcd_sequencer",
+          "lcd_i2c_master"
+        ],
+        [
+          "bpf_div",
+          "bpf_div"
+        ]
+      ],
+      "classification": {
+        "role": "match",
+        "role_scores": {
+          "parser": 0,
+          "match": 1,
+          "control": 1,
+          "action": 0,
+          "memory": 0,
+          "interface": 0
+        },
+        "packet_score": 0,
+        "decision_score": 0
+      }
+    }
+  },
+  "bpf_view": {
+    "chosen_top": "bpf_control",
+    "top_packet_inputs": [
+      {
+        "direction": "input",
+        "name": "bpf_iram_rdata",
+        "width": "[63:0]"
+      },
+      {
+        "direction": "input",
+        "name": "bpf_eop_fault",
+        "width": "1"
+      }
+    ],
+    "top_packet_outputs": [
+      {
+        "direction": "output",
+        "name": "bpf_access_len",
+        "width": "[2:0]"
+      },
+      {
+        "direction": "output",
+        "name": "bpf_sel_plen",
+        "width": "1"
+      }
+    ],
+    "top_decision_ports": [],
+    "roles": {
+      "match": [
+        "bpf_control",
+        "bpf_dp",
+        "bpf_mult",
+        "lcd_mpu",
+        "lcd_mpu_env",
+        "lcd_sequencer"
+      ],
+      "unknown": [
+        "bpf_div",
+        "bpf_shifter",
+        "lcd_env",
+        "lcd_i2c_master"
+      ],
+      "interface": [
+        "bpf_env",
+        "bpf_npu"
+      ],
+      "memory": [
+        "bpf_iram",
+        "bpf_pram",
+        "bpf_sram",
+        "lcd_iram"
+      ]
+    },
+    "parents": {
+      "bpf_dp": [
+        [
+          "bpf_dp",
+          "bpf_shifter"
+        ],
+        [
+          "bpf_npu",
+          "bpf_dp"
+        ],
+        [
+          "lcd_mpu",
+          "bpf_dp"
+        ]
+      ],
+      "bpf_mult": [
+        [
+          "bpf_dp",
+          "bpf_mult"
+        ]
+      ],
+      "bpf_div": [
+        [
+          "bpf_dp",
+          "bpf_div"
+        ],
+        [
+          "lcd_sequencer",
+          "bpf_div"
+        ]
+      ],
+      "bpf_env": [
+        [
+          "bpf_env",
+          "bpf_npu"
+        ]
+      ],
+      "bpf_npu": [
+        [
+          "bpf_npu",
+          "bpf_control"
+        ]
+      ],
+      "bpf_iram": [
+        [
+          "bpf_npu",
+          "bpf_iram"
+        ]
+      ],
+      "bpf_sram": [
+        [
+          "bpf_npu",
+          "bpf_sram"
+        ],
+        [
+          "lcd_mpu",
+          "bpf_sram"
+        ],
+        [
+          "lcd_mpu",
+          "u2u_s2u_ram"
+        ]
+      ],
+      "bpf_pram": [
+        [
+          "bpf_npu",
+          "bpf_pram_b0"
+        ],
+        [
+          "bpf_npu",
+          "bpf_pram_b1"
+        ],
+        [
+          "bpf_npu",
+          "bpf_pram_b2"
+        ]
+      ],
+      "lcd_env": [
+        [
+          "lcd_env",
+          "lcd_sequencer"
+        ]
+      ],
+      "lcd_mpu": [
+        [
+          "lcd_mpu",
+          "bpf_control"
+        ]
+      ],
+      "lcd_iram": [
+        [
+          "lcd_mpu",
+          "lcd_iram"
+        ]
+      ],
+      "lcd_i2c_master": [
+        [
+          "lcd_mpu",
+          "lcd_i2c_master"
+        ]
+      ],
+      "lcd_mpu_env": [
+        [
+          "lcd_mpu_env",
+          "lcd_mpu"
+        ]
+      ],
+      "lcd_sequencer": [
+        [
+          "lcd_sequencer",
+          "lcd_i2c_master"
+        ]
+      ]
+    }
+  }
+}

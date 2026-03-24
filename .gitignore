@@ -1,0 +1,31 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# PyMTL3 / Hardware Simulation
+*.vcd
+*.gtkw
+obj_dir/
+*.bak
+
+# Git / OS
+.DS_Store
+.idea/
+.vscode/
+
+
+bpf_test/
+
+.pytest_cache/
+
+build/
+obj_dir*/
+*.so
+*.o
+*.a
+*.cpp
+*.mk
+*_pickled.v
+pymtl_import_config_*.py

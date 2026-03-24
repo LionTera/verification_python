@@ -1,0 +1,162 @@
+[
+  {
+    "module": "bpf_control",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/bpf_control.v",
+    "wrapper": "pymtl/wrappers/bpf_control_wrapper.py",
+    "ports": 52,
+    "params": 3,
+    "children": 0,
+    "role": "memory",
+    "top_score": 118
+  },
+  {
+    "module": "bpf_div",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/bpf_div.v",
+    "wrapper": "pymtl/wrappers/bpf_div_wrapper.py",
+    "ports": 8,
+    "params": 2,
+    "children": 0,
+    "role": "alu_helper",
+    "top_score": 12
+  },
+  {
+    "module": "bpf_dp",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/bpf_dp.v",
+    "wrapper": "pymtl/wrappers/bpf_dp_wrapper.py",
+    "ports": 60,
+    "params": 6,
+    "children": 3,
+    "role": "memory",
+    "top_score": 90
+  },
+  {
+    "module": "bpf_env",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/bpf_env.v",
+    "wrapper": "pymtl/wrappers/bpf_env_wrapper.py",
+    "ports": 25,
+    "params": 3,
+    "children": 1,
+    "role": "datapath",
+    "top_score": 45
+  },
+  {
+    "module": "bpf_iram",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/bpf_iram.v",
+    "wrapper": "pymtl/wrappers/bpf_iram_wrapper.py",
+    "ports": 8,
+    "params": 3,
+    "children": 0,
+    "role": "memory",
+    "top_score": 14
+  },
+  {
+    "module": "bpf_mult",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/bpf_mult.v",
+    "wrapper": "pymtl/wrappers/bpf_mult_wrapper.py",
+    "ports": 8,
+    "params": 2,
+    "children": 0,
+    "role": "alu_helper",
+    "top_score": 12
+  },
+  {
+    "module": "bpf_npu",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/bpf_npu.v",
+    "wrapper": "pymtl/wrappers/bpf_npu_wrapper.py",
+    "ports": 25,
+    "params": 3,
+    "children": 7,
+    "role": "memory",
+    "top_score": 93
+  },
+  {
+    "module": "bpf_pram",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/bpf_pram.v",
+    "wrapper": "pymtl/wrappers/bpf_pram_wrapper.py",
+    "ports": 8,
+    "params": 3,
+    "children": 0,
+    "role": "memory",
+    "top_score": 14
+  },
+  {
+    "module": "bpf_shifter",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/bpf_shift.v",
+    "wrapper": "pymtl/wrappers/bpf_shifter_wrapper.py",
+    "ports": 8,
+    "params": 1,
+    "children": 0,
+    "role": "alu_helper",
+    "top_score": 60
+  },
+  {
+    "module": "bpf_sram",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/bpf_sram.v",
+    "wrapper": "pymtl/wrappers/bpf_sram_wrapper.py",
+    "ports": 6,
+    "params": 3,
+    "children": 0,
+    "role": "memory",
+    "top_score": 12
+  },
+  {
+    "module": "lcd_env",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/lcd_env.v",
+    "wrapper": "pymtl/wrappers/lcd_env_wrapper.py",
+    "ports": 15,
+    "params": 4,
+    "children": 1,
+    "role": "env",
+    "top_score": -63
+  },
+  {
+    "module": "lcd_i2c_master",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/lcd_i2c_master.v",
+    "wrapper": "pymtl/wrappers/lcd_i2c_master_wrapper.py",
+    "ports": 9,
+    "params": 2,
+    "children": 0,
+    "role": "lcd",
+    "top_score": -87
+  },
+  {
+    "module": "lcd_iram",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/lcd_iram.v",
+    "wrapper": "pymtl/wrappers/lcd_iram_wrapper.py",
+    "ports": 8,
+    "params": 3,
+    "children": 0,
+    "role": "memory",
+    "top_score": -86
+  },
+  {
+    "module": "lcd_mpu",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/lcd_mpu.v",
+    "wrapper": "pymtl/wrappers/lcd_mpu_wrapper.py",
+    "ports": 20,
+    "params": 3,
+    "children": 6,
+    "role": "memory",
+    "top_score": -38
+  },
+  {
+    "module": "lcd_mpu_env",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/lcd_mpu_env.v",
+    "wrapper": "pymtl/wrappers/lcd_mpu_env_wrapper.py",
+    "ports": 20,
+    "params": 4,
+    "children": 1,
+    "role": "datapath",
+    "top_score": -58
+  },
+  {
+    "module": "lcd_sequencer",
+    "file": "bpf_test/u2u_v401/tf_bpf/rtl/lcd_sequencer.v",
+    "wrapper": "pymtl/wrappers/lcd_sequencer_wrapper.py",
+    "ports": 9,
+    "params": 4,
+    "children": 2,
+    "role": "control",
+    "top_score": -71
+  }
+]
