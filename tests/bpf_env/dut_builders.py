@@ -24,6 +24,11 @@ REPO_ALIAS = PUBLIC_ROOT / "vp_repo"
 VERILATOR_ALIAS = PUBLIC_ROOT / "vp_verilator"
 MSYS2_UCRT_BIN = Path("C:/msys64/ucrt64/bin")
 DLL_DIR_HANDLES = []
+REPO_PATH_MARKERS = (
+    "bpf_test",
+    "pymtl",
+    "verilator",
+)
 
 
 class PatchedVerilogImportPass(VerilogVerilatorImportPass):
@@ -62,6 +67,7 @@ def _ensure_verilator_cmd(verilator_root: Path) -> Path:
 
 
 def _rewrite_path(path_str: str) -> str:
+    path_str = _normalize_repo_path(path_str)
     if os.name != "nt":
         return path_str.replace("\\", "/")
     repo_alias = _ensure_junction(REPO_ALIAS, REPO_ROOT)
@@ -69,6 +75,22 @@ def _rewrite_path(path_str: str) -> str:
     rewritten = path_str.replace(str(REPO_ROOT), str(repo_alias))
     rewritten = rewritten.replace(str(VERILATOR_ROOT), str(verilator_alias))
     return rewritten.replace("\\", "/")
+
+
+def _normalize_repo_path(path_str: str) -> str:
+    normalized = Path(path_str)
+    if normalized.exists():
+        return str(normalized)
+
+    parts = normalized.parts
+    for marker in REPO_PATH_MARKERS:
+        if marker not in parts:
+            continue
+        marker_idx = parts.index(marker)
+        candidate = REPO_ROOT.joinpath(*parts[marker_idx:])
+        if candidate.exists():
+            return str(candidate)
+    return path_str
 
 
 def _prepare_windows_verilator_env() -> None:
