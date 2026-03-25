@@ -62,6 +62,8 @@ def _ensure_verilator_cmd(verilator_root: Path) -> Path:
 
 
 def _rewrite_path(path_str: str) -> str:
+    if os.name != "nt":
+        return path_str.replace("\\", "/")
     repo_alias = _ensure_junction(REPO_ALIAS, REPO_ROOT)
     verilator_alias = _ensure_junction(VERILATOR_ALIAS, VERILATOR_ROOT)
     rewritten = path_str.replace(str(REPO_ROOT), str(repo_alias))
@@ -88,7 +90,10 @@ def _prepare_windows_verilator_env() -> None:
 def _build_cwd():
     prev_cwd = Path.cwd()
     try:
-        _prepare_windows_verilator_env()
+        if os.name == "nt":
+            _prepare_windows_verilator_env()
+        else:
+            os.chdir(REPO_ROOT)
         yield
     finally:
         os.chdir(prev_cwd)
@@ -166,7 +171,10 @@ def build_bpf_env():
         import_cfg = VerilogVerilatorImportConfigs(dut)
         import_cfg.vl_W_fatal = False
         import_cfg.vl_Wno_list = sorted(set(import_cfg.vl_Wno_list + ["TIMESCALEMOD", "IMPLICIT", "CASEINCOMPLETE"]))
-        import_cfg.c_include_path = [str(VERILATOR_ALIAS / "build" / "include")]
+        if os.name == "nt":
+            import_cfg.c_include_path = [str(VERILATOR_ALIAS / "build" / "include")]
+        else:
+            import_cfg.c_include_path = [str(VERILATOR_ROOT / "build" / "include")]
         dut.set_metadata(VerilogVerilatorImportPass.import_config, import_cfg)
         dut = PatchedVerilogImportPass()(dut)
         dut.apply(DefaultPassGroup())
