@@ -13,7 +13,7 @@ def _run_ret_k_program(ret_value: int):
     dut = build_bpf_env()
     tb = BpfPythonTB(dut, trace_path=Path("reports") / f"bpf_ret_{ret_value}.csv")
     tb.init_signals()
-    tb.load_packet(make_tcp_packet(payload=b"\x01\x02\x03\x04"))
+    tb.load_packet(make_tcp_packet())
     tb.load_program([encode_bpf_instruction(RET_K_OPCODE, k=ret_value)])
     tb.configure_start_address(0)
     tb.pulse_start()
