@@ -16,8 +16,11 @@ Generated files:
 - tests/bpf_env/bpf_python_tb.py
 - tests/integration/test_bpf_env_smoke.py
 - tests/integration/test_bpf_env_tcp_placeholder.py
+- tools/check_bpf_env_linux.py
+- tools/run_bpf_env_smoke_linux.sh
 
 Notes:
 - DUT target is `bpf_env`
-- `BPF_START_ADDR` still needs the real constant from your RTL package/include files
+- `BPF_START_ADDR` is set to `0x1000` in `tests/bpf_env/bpf_python_tb.py`
 - the TCP test is intentionally skipped until you provide real compiled instructions
+- On Linux, run `python tools/check_bpf_env_linux.py` before `./tools/run_bpf_env_smoke_linux.sh` to confirm the RTL and wrapper files are present

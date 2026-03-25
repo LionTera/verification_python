@@ -9,6 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED_PATHS = [
     Path("bpf_test/u2u_v401/tf_bpf/rtl/bpf_env.v"),
+    Path("bpf_test/u2u_v401/tf_bpf/rtl/bpf_package.sv"),
     Path("pymtl/wrappers/bpf_env_wrapper.py"),
     Path("tests/bpf_env/bpf_python_tb.py"),
     Path("tests/bpf_env/dut_builders.py"),

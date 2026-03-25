@@ -55,6 +55,7 @@ class BpfEnv( Component, VerilogPlaceholder ):
         s.set_metadata(
             VerilogPlaceholderPass.v_libs,
             [
+            join( base, "bpf_test/u2u_v401/tf_bpf/rtl/bpf_package.sv" ),
             join( base, "bpf_test/u2u_v401/tf_bpf/rtl/bpf_control.v" ),
             join( base, "bpf_test/u2u_v401/tf_bpf/rtl/bpf_div.v" ),
             join( base, "bpf_test/u2u_v401/tf_bpf/rtl/bpf_dp.v" ),

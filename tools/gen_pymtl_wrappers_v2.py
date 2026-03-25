@@ -242,7 +242,7 @@ def top_score(module: ModuleDef) -> int:
     return score
 
 
-def render_wrapper(module: ModuleDef, repo_root: Path, rtl_root: Path, module_source_files: list[Path]) -> str:
+def render_wrapper(module: ModuleDef, repo_root: Path, rtl_root: Path, module_source_files: list[Path], support_files: list[Path]) -> str:
     class_name = camel_case(module.name)
     widths = sorted({port.width for port in module.ports if port.name not in SKIP_PORTS})
     bit_aliases = [f"Bits{width} = mk_bits({width})" for width in widths]
@@ -256,7 +256,7 @@ def render_wrapper(module: ModuleDef, repo_root: Path, rtl_root: Path, module_so
 
     param_lines = [f'            "{name}": {value},' for name, value in module.parameters.items()]
     rel_src = module.source_file.relative_to(repo_root).as_posix()
-    lib_files = [path for path in module_source_files if path != module.source_file]
+    lib_files = [path for path in support_files + module_source_files if path != module.source_file]
     lib_lines = [f'            join( base, "{path.relative_to(repo_root).as_posix()}" ),' for path in lib_files]
     include_rel = rtl_root.relative_to(repo_root).as_posix()
 
@@ -389,6 +389,8 @@ def generate(rtl_root: Path, wrappers_dir: Path, reports_dir: Path) -> dict[str,
     package_env = parse_package_parameters(rtl_files)
     modules = collect_modules(rtl_files, package_env)
     ordered_modules = sorted(modules.values(), key=lambda item: item.name)
+    module_source_files = sorted({item.source_file for item in ordered_modules})
+    support_files = sorted(path for path in rtl_files if path.suffix.lower() == ".sv" and path not in module_source_files)
 
     wrappers_dir.mkdir(parents=True, exist_ok=True)
     reports_dir.mkdir(parents=True, exist_ok=True)
@@ -398,7 +400,8 @@ def generate(rtl_root: Path, wrappers_dir: Path, reports_dir: Path) -> dict[str,
             module,
             repo_root,
             rtl_root,
-            sorted({item.source_file for item in ordered_modules}),
+            module_source_files,
+            support_files,
         )
         wrapper_path = wrappers_dir / f"{module.name}_wrapper.py"
         wrapper_path.write_text(wrapper_text, encoding="utf-8")
