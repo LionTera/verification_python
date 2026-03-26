@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import ipaddress
 import logging
 from dataclasses import dataclass
 from pathlib import Path
@@ -11,6 +12,53 @@ LOGGER = logging.getLogger(__name__)
 
 BPF_START_ADDR = 0x1000
 BPF_IRAM_ADDR = 0x2000
+BPF_CLASS_MASK = 0x07
+BPF_SIZE_MASK = 0x18
+BPF_MODE_MASK = 0xE0
+BPF_OP_MASK = 0xF0
+BPF_SRC_MASK = 0x08
+
+BPF_LD = 0x00
+BPF_LDX = 0x01
+BPF_ST = 0x02
+BPF_STX = 0x03
+BPF_ALU = 0x04
+BPF_JMP = 0x05
+BPF_RET = 0x06
+BPF_MISC = 0x07
+
+BPF_W = 0x00
+BPF_H = 0x08
+BPF_B = 0x10
+
+BPF_IMM = 0x00
+BPF_ABS = 0x20
+BPF_IND = 0x40
+BPF_MEM = 0x60
+BPF_LEN = 0x80
+BPF_MSH = 0xA0
+
+BPF_ADD = 0x00
+BPF_SUB = 0x10
+BPF_MUL = 0x20
+BPF_DIV = 0x30
+BPF_OR = 0x40
+BPF_AND = 0x50
+BPF_LSH = 0x60
+BPF_RSH = 0x70
+BPF_NEG = 0x80
+BPF_MOD = 0x90
+BPF_XOR = 0xA0
+
+BPF_JA = 0x00
+BPF_JEQ = 0x10
+BPF_JGT = 0x20
+BPF_JGE = 0x30
+BPF_JSET = 0x40
+
+BPF_K = 0x00
+BPF_X = 0x08
+
 RET_K_OPCODE = 0x06
 RET_A_OPCODE = 0x16
 
@@ -40,10 +88,169 @@ def format_bpf_instruction(instruction: int) -> str:
     )
 
 
+def format_bpf_instruction_asm(instruction: int) -> str:
+    decoded = decode_bpf_instruction(instruction)
+    code = decoded["code"]
+    klass = code & BPF_CLASS_MASK
+    size = code & BPF_SIZE_MASK
+    mode = code & BPF_MODE_MASK
+    op = code & BPF_OP_MASK
+    src = code & BPF_SRC_MASK
+
+    if code == RET_K_OPCODE:
+        return f"ret #{decoded['k']}"
+    if code == RET_A_OPCODE:
+        return "ret a"
+    if klass == BPF_LD:
+        size_name = {
+            BPF_W: "ld",
+            BPF_H: "ldh",
+            BPF_B: "ldb",
+        }.get(size, f"ld?0x{size:02x}")
+        if mode == BPF_ABS:
+            return f"{size_name} [{decoded['k']}]"
+        if mode == BPF_IND:
+            return f"{size_name} [x + {decoded['k']}]"
+        if mode == BPF_IMM:
+            return f"ld #{decoded['k']}"
+        if mode == BPF_LEN:
+            return "ld #pktlen"
+        if mode == BPF_MEM:
+            return f"ld M[{decoded['k']}]"
+    if klass == BPF_LDX:
+        if mode == BPF_IMM:
+            return f"ldx #{decoded['k']}"
+        if mode == BPF_LEN:
+            return "ldx #pktlen"
+        if mode == BPF_MEM:
+            return f"ldx M[{decoded['k']}]"
+        if mode == BPF_MSH:
+            return f"ldxb 4*([{decoded['k']}] & 0xf)"
+    if klass == BPF_ST:
+        return f"st M[{decoded['k']}]"
+    if klass == BPF_STX:
+        return f"stx M[{decoded['k']}]"
+    if klass == BPF_ALU:
+        if op == BPF_NEG:
+            return "neg"
+        rhs = "x" if src == BPF_X else f"#{decoded['k']}"
+        op_name = {
+            BPF_ADD: "add",
+            BPF_SUB: "sub",
+            BPF_MUL: "mul",
+            BPF_DIV: "div",
+            BPF_OR: "or",
+            BPF_AND: "and",
+            BPF_LSH: "lsh",
+            BPF_RSH: "rsh",
+            BPF_MOD: "mod",
+            BPF_XOR: "xor",
+        }.get(op)
+        if op_name is not None:
+            return f"{op_name} {rhs}"
+    if klass == BPF_JMP:
+        if op == BPF_JA:
+            return f"ja {decoded['k']}"
+        rhs = "x" if src == BPF_X else f"#{decoded['k']}"
+        op_name = {
+            BPF_JEQ: "jeq",
+            BPF_JGT: "jgt",
+            BPF_JGE: "jge",
+            BPF_JSET: "jset",
+        }.get(op)
+        if op_name is not None:
+            return f"{op_name} {rhs}, jt {decoded['jt']}, jf {decoded['jf']}"
+    return f".word 0x{instruction:016x}"
+
+
 def format_bpf_program(instructions: Iterable[int]) -> str:
     lines = ["BPF program:"]
     for index, instruction in enumerate(instructions):
-        lines.append(f"  [{index:02d}] 0x{instruction:016x}  {format_bpf_instruction(instruction)}")
+        lines.append(
+            f"  [{index:02d}] 0x{instruction:016x}  {format_bpf_instruction_asm(instruction)}"
+            f"    ; {format_bpf_instruction(instruction)}"
+        )
+    return "\n".join(lines)
+
+
+def _format_mac(raw: bytes) -> str:
+    return ":".join(f"{byte:02x}" for byte in raw)
+
+
+def _format_tcp_flags(flags: int) -> str:
+    names = [
+        (0x80, "CWR"),
+        (0x40, "ECE"),
+        (0x20, "URG"),
+        (0x10, "ACK"),
+        (0x08, "PSH"),
+        (0x04, "RST"),
+        (0x02, "SYN"),
+        (0x01, "FIN"),
+    ]
+    active = [name for mask, name in names if flags & mask]
+    return ",".join(active) if active else "none"
+
+
+def analyze_packet(packet: bytes) -> str:
+    lines = [
+        f"Packet length: {len(packet)} bytes",
+        f"Packet bytes:  {packet.hex()}",
+    ]
+
+    if len(packet) < 14:
+        lines.append("Ethernet: truncated header")
+        return "\n".join(lines)
+
+    dst_mac = _format_mac(packet[0:6])
+    src_mac = _format_mac(packet[6:12])
+    eth_type = int.from_bytes(packet[12:14], "big")
+    lines.append(f"Ethernet: dst={dst_mac} src={src_mac} eth_type=0x{eth_type:04x}")
+
+    if eth_type != 0x0800:
+        lines.append("L3: not IPv4")
+        return "\n".join(lines)
+
+    if len(packet) < 34:
+        lines.append("IPv4: truncated header")
+        return "\n".join(lines)
+
+    ipv4 = packet[14:]
+    version = ipv4[0] >> 4
+    ihl = (ipv4[0] & 0x0F) * 4
+    total_length = int.from_bytes(ipv4[2:4], "big")
+    ttl = ipv4[8]
+    protocol = ipv4[9]
+    src_ip = ipaddress.ip_address(ipv4[12:16])
+    dst_ip = ipaddress.ip_address(ipv4[16:20])
+    lines.append(
+        "IPv4: "
+        f"version={version} ihl={ihl} total_length={total_length} ttl={ttl} "
+        f"protocol={protocol} src={src_ip} dst={dst_ip}"
+    )
+
+    if protocol != 6:
+        lines.append("L4: not TCP")
+        return "\n".join(lines)
+
+    if len(ipv4) < ihl + 20:
+        lines.append("TCP: truncated header")
+        return "\n".join(lines)
+
+    tcp = ipv4[ihl:]
+    src_port = int.from_bytes(tcp[0:2], "big")
+    dst_port = int.from_bytes(tcp[2:4], "big")
+    seq = int.from_bytes(tcp[4:8], "big")
+    ack = int.from_bytes(tcp[8:12], "big")
+    data_offset = (tcp[12] >> 4) * 4
+    flags = tcp[13]
+    window = int.from_bytes(tcp[14:16], "big")
+    payload_len = max(total_length - ihl - data_offset, 0)
+    lines.append(
+        "TCP: "
+        f"src_port={src_port} dst_port={dst_port} seq={seq} ack={ack} "
+        f"flags={_format_tcp_flags(flags)} window={window} payload_len={payload_len}"
+    )
     return "\n".join(lines)
 
 
@@ -188,8 +395,7 @@ class BpfPythonTB:
         )
 
     def print_packet_summary(self, packet: bytes) -> None:
-        print(f"Packet length: {len(packet)} bytes")
-        print(f"Packet bytes:  {packet.hex()}")
+        print(analyze_packet(packet))
 
     def print_program(self) -> None:
         print(format_bpf_program(self._loaded_program))
