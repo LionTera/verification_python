@@ -18,9 +18,10 @@ def make_tcp_port_80_filter() -> list[int]:
     return [
         bpf_ldb_abs(23),
         bpf_jeq_k(6, jt=0, jf=2),
-        # Compare the low byte of the TCP destination port to avoid RTL-specific
-        # halfword byte-order ambiguity in `ldh`.
-        bpf_ldb_abs(37),
+        # Packet bytes are presented reversed within each aligned 32-bit PRAM
+        # word in this RTL path, so the low byte of TCP dst port 80 is read
+        # through offset 38 rather than 37.
+        bpf_ldb_abs(38),
         bpf_jeq_k(80, jt=1, jf=0),
         bpf_ret_k(0),
         bpf_ret_k(1),
