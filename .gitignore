@@ -29,3 +29,16 @@ obj_dir*/
 *.mk
 *_pickled.v
 pymtl_import_config_*.py
+pymtl_import_config_*.json
+
+# Generated BPF test artifacts
+reports/bpf_trace.csv
+reports/bpf_trace.md
+reports/bpf_ret_*.csv
+reports/bpf_ret_*.md
+reports/bpf_tcp*_*.csv
+reports/bpf_tcp*_*.md
+reports/bpf_udp*_*.csv
+reports/bpf_udp*_*.md
+reports/bpf_probe_*.csv
+reports/bpf_probe_*.md
