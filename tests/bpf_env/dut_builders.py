@@ -164,7 +164,7 @@ def _set_translation_metadata(dut) -> None:
     dut.set_metadata(VerilogTranslationPass.translated_top_module, top_module)
 
 
-def build_bpf_env():
+def build_bpf_env(*, waveform: str | os.PathLike[str] | None = None):
     if not verilator_available():
         raise RuntimeError("verilator is required for VerilogTranslationImportPass")
 
@@ -193,6 +193,11 @@ def build_bpf_env():
         import_cfg = VerilogVerilatorImportConfigs(dut)
         import_cfg.vl_W_fatal = False
         import_cfg.vl_Wno_list = sorted(set(import_cfg.vl_Wno_list + ["TIMESCALEMOD", "IMPLICIT", "CASEINCOMPLETE"]))
+        if waveform is not None:
+            waveform_path = Path(waveform)
+            waveform_path.parent.mkdir(parents=True, exist_ok=True)
+            import_cfg.vl_trace = True
+            import_cfg.vl_trace_filename = str(waveform_path.with_suffix(""))
         if os.name == "nt":
             import_cfg.c_include_path = [str(VERILATOR_ALIAS / "build" / "include")]
         else:

@@ -105,6 +105,7 @@ The `accept/reject` test originally used `make_tcp_packet(payload=...)`, but the
 File:
 
 - `tests/integration/test_bpf_env_smoke.py`
+- `tests/integration/test_bpf_env_smoke.md`
 
 What it checks:
 
@@ -119,6 +120,7 @@ What it checks:
 File:
 
 - `tests/integration/test_bpf_env_accept_reject.py`
+- `tests/integration/test_bpf_env_accept_reject.md`
 
 What it checks:
 
@@ -131,6 +133,7 @@ What it checks:
 File:
 
 - `tests/integration/test_bpf_env_tcp.py`
+- `tests/integration/test_bpf_env_tcp.md`
 
 What it checks:
 
@@ -142,6 +145,7 @@ What it checks:
 File:
 
 - `tests/integration/test_bpf_env_tcp_port_filter.py`
+- `tests/integration/test_bpf_env_tcp_port_filter.md`
 
 What it checks:
 
@@ -224,3 +228,13 @@ Run the current BPF integration set:
 ```bash
 ./tools/run_bpf_integration_linux.sh
 ```
+
+## Waveforms
+
+The DUT builder supports optional Verilator waveform output:
+
+```python
+dut = build_bpf_env(waveform="reports/my_waveform")
+```
+
+This enables `vl_trace` on the imported Verilator model and writes a VCD using the requested base filename.
