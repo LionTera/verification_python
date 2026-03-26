@@ -91,6 +91,10 @@ def bpf_ret_k(value: int) -> int:
     return bpf_stmt(BPF_RET | BPF_K, value)
 
 
+def bpf_ret_a() -> int:
+    return bpf_stmt(BPF_RET | BPF_A, 0)
+
+
 def decode_bpf_instruction(instruction: int) -> dict[str, int]:
     return {
         "code": (instruction >> 48) & 0xFF,
