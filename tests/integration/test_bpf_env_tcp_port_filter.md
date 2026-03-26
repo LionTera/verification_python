@@ -19,9 +19,9 @@ Rejected cases:
 ## Program Under Test
 
 ```text
-ldb [23]
+ldb [protocol_offset]
 jeq #6, jt 0, jf 2
-ldb [37]
+ldb [dst_port_low_byte_offset]
 jeq #80, jt 1, jf 0
 ret #0
 ret #1
@@ -29,9 +29,11 @@ ret #1
 
 ## Program Meaning
 
-1. Load the IPv4 protocol byte from offset `23`
+1. Probe the DUT to discover which byte offset exposes the IPv4 protocol byte
+2. Probe the DUT to discover which byte offset exposes the TCP destination-port low byte
+3. Load the discovered IPv4 protocol byte
 2. If protocol is not TCP (`6`), jump to reject
-3. Load the low byte of the TCP destination port from offset `37`
+3. Load the discovered low byte of the TCP destination port
 4. If that byte is `80` (`0x50`), jump to accept
 5. Otherwise reject
 
@@ -42,6 +44,7 @@ ret #1
 - multi-instruction control flow works
 - protocol filtering works
 - destination-port filtering works for the current packet set
+- the test adapts to the RTL's actual packet-byte mapping instead of assuming software-standard offsets
 
 ## Expected Result
 
@@ -62,3 +65,12 @@ For UDP destination port `80`:
 - `returned == True`
 - `accepted == False`
 - `ret_value == 0`
+
+## Notes
+
+This test intentionally probes packet-field offsets using small `ldb [k]; ret a` programs before running the final filter.
+
+Reason:
+
+- this RTL does not expose packet bytes at exactly the same offsets a software BPF implementation would assume
+- probing avoids hardcoding an offset that is wrong for the hardware datapath

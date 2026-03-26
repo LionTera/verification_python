@@ -38,6 +38,7 @@ def test_bpf_env_ret_k_accepts_nonzero():
     assert result.accepted
     assert result.ret_value == 1
     assert result.trace_path.exists()
+    assert result.report_path.exists()
 
 
 @pytest.mark.integration
@@ -51,3 +52,4 @@ def test_bpf_env_ret_k_rejects_zero():
     assert not result.accepted
     assert result.ret_value == 0
     assert result.trace_path.exists()
+    assert result.report_path.exists()

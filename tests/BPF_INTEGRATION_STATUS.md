@@ -76,6 +76,7 @@ The `accept/reject` test originally used `make_tcp_packet(payload=...)`, but the
   - now prints packet analysis
   - now prints BPF program listings
   - now prints final run summaries
+  - now writes a markdown report next to each CSV trace
 - `tests/integration/test_bpf_env_smoke.py`
   - minimal bring-up test
 - `tests/integration/test_bpf_env_accept_reject.py`
@@ -113,7 +114,8 @@ What it checks:
 - Verilator import succeeds
 - a trivial `RET_K 1` program runs to completion
 - the DUT returns and accepts
-- a trace file is generated
+- a CSV trace file is generated
+- a markdown report file is generated
 
 ### Accept/reject logic test
 
@@ -127,6 +129,7 @@ What it checks:
 - `RET_K 1` produces `accepted=True`
 - `RET_K 0` produces `accepted=False`
 - both programs return successfully
+- trace/report artifacts are generated
 
 ### TCP packet test
 
@@ -139,6 +142,7 @@ What it checks:
 
 - a structured Ethernet + IPv4 + TCP packet can be loaded
 - the DUT handles the packet under the current trivial return program
+- trace/report artifacts are generated
 
 ### TCP port filter test
 
@@ -152,9 +156,10 @@ What it checks:
 - classic-BPF absolute packet loads work
 - conditional jumps work
 - multi-instruction control flow works
-- TCP dst port `80` is accepted
-- TCP dst port `443` is rejected
-- UDP dst port `80` is rejected
+- the test dynamically probes DUT-visible packet offsets before constructing the final filter
+- TCP dst port `80` should be accepted
+- TCP dst port `443` should be rejected
+- UDP dst port `80` should be rejected
 
 ## Test Output Improvements
 
@@ -173,6 +178,11 @@ The current test output printed with `pytest -s` now includes:
   - accepted flag
   - return value
   - trace file path
+  - report file path
+- a saved markdown report per run containing:
+  - result summary
+  - human-readable packet decode
+  - BPF program table
 
 Example instruction output:
 
@@ -196,18 +206,13 @@ Still missing:
 
 ## Recommended Next Step
 
-Add the first real logic test using multiple instructions.
+Add the next level of real logic tests beyond the protocol/port filter.
 
-Best candidate:
+Best candidates:
 
-- accept only TCP destination port `80`
-- reject a different destination port
-
-That test would exercise:
-
-- absolute packet loads
-- conditional jump behavior
-- nontrivial accept/reject logic
+- packet-loss counter behavior through MMAP
+- malformed/truncated packet behavior
+- ALU and conditional-jump programs beyond simple equality checks
 
 ## How To Run On Linux
 

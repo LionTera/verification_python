@@ -31,3 +31,4 @@ def test_bpf_env_smoke():
     assert result.accepted
     assert result.ret_value == 1
     assert result.trace_path.exists()
+    assert result.report_path.exists()

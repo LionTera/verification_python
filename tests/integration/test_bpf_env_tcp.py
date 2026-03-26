@@ -31,3 +31,4 @@ def test_bpf_env_tcp():
     assert result.returned
     assert result.accepted
     assert len(packet) >= 54
+    assert result.report_path.exists()

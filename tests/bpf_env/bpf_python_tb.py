@@ -283,6 +283,114 @@ def analyze_packet(packet: bytes) -> str:
     return "\n".join(lines)
 
 
+def packet_report_markdown(packet: bytes) -> str:
+    lines = [
+        "## Packet",
+        "",
+        f"- Length: `{len(packet)}` bytes",
+        f"- Raw bytes: `{packet.hex()}`",
+        "",
+    ]
+
+    if len(packet) < 14:
+        lines.extend(["Truncated Ethernet header.", ""])
+        return "\n".join(lines)
+
+    dst_mac = _format_mac(packet[0:6])
+    src_mac = _format_mac(packet[6:12])
+    eth_type = int.from_bytes(packet[12:14], "big")
+    lines.extend(
+        [
+            "### Ethernet",
+            "",
+            "| Field | Value |",
+            "| --- | --- |",
+            f"| Destination MAC | `{dst_mac}` |",
+            f"| Source MAC | `{src_mac}` |",
+            f"| EtherType | `0x{eth_type:04x}` |",
+            "",
+        ]
+    )
+
+    if eth_type != 0x0800 or len(packet) < 34:
+        return "\n".join(lines)
+
+    ipv4 = packet[14:]
+    version = ipv4[0] >> 4
+    ihl = (ipv4[0] & 0x0F) * 4
+    total_length = int.from_bytes(ipv4[2:4], "big")
+    ttl = ipv4[8]
+    protocol = ipv4[9]
+    src_ip = ipaddress.ip_address(ipv4[12:16])
+    dst_ip = ipaddress.ip_address(ipv4[16:20])
+    lines.extend(
+        [
+            "### IPv4",
+            "",
+            "| Field | Value |",
+            "| --- | --- |",
+            f"| Version | `{version}` |",
+            f"| Header Length | `{ihl}` bytes |",
+            f"| Total Length | `{total_length}` bytes |",
+            f"| TTL | `{ttl}` |",
+            f"| Protocol | `{protocol}` |",
+            f"| Source IP | `{src_ip}` |",
+            f"| Destination IP | `{dst_ip}` |",
+            "",
+        ]
+    )
+
+    if protocol != 6 or len(ipv4) < ihl + 20:
+        return "\n".join(lines)
+
+    tcp = ipv4[ihl:]
+    src_port = int.from_bytes(tcp[0:2], "big")
+    dst_port = int.from_bytes(tcp[2:4], "big")
+    seq = int.from_bytes(tcp[4:8], "big")
+    ack = int.from_bytes(tcp[8:12], "big")
+    data_offset = (tcp[12] >> 4) * 4
+    flags = tcp[13]
+    window = int.from_bytes(tcp[14:16], "big")
+    checksum = int.from_bytes(tcp[16:18], "big")
+    urgent_ptr = int.from_bytes(tcp[18:20], "big")
+    payload_len = max(total_length - ihl - data_offset, 0)
+    lines.extend(
+        [
+            "### TCP",
+            "",
+            "| Field | Byte Range | Value |",
+            "| --- | --- | --- |",
+            f"| Source Port | `0-1` | `{src_port}` |",
+            f"| Destination Port | `2-3` | `{dst_port}` |",
+            f"| Sequence Number | `4-7` | `{seq}` |",
+            f"| Acknowledgment Number | `8-11` | `{ack}` |",
+            f"| Header Length | `12[7:4]` | `{data_offset}` bytes |",
+            f"| Flags | `13` | `{_format_tcp_flags(flags)}` (`0x{flags:02x}`) |",
+            f"| Window | `14-15` | `{window}` |",
+            f"| Checksum | `16-17` | `0x{checksum:04x}` |",
+            f"| Urgent Pointer | `18-19` | `{urgent_ptr}` |",
+            f"| Payload Length | `20+` | `{payload_len}` bytes |",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def program_report_markdown(instructions: Iterable[int]) -> str:
+    lines = [
+        "## BPF Program",
+        "",
+        "| Index | Raw | Assembly | Details |",
+        "| --- | --- | --- | --- |",
+    ]
+    for index, instruction in enumerate(instructions):
+        lines.append(
+            f"| `{index}` | `0x{instruction:016x}` | `{format_bpf_instruction_asm(instruction)}` | `{format_bpf_instruction(instruction)}` |"
+        )
+    lines.append("")
+    return "\n".join(lines)
+
+
 @dataclass
 class BpfRunResult:
     cycles: int
@@ -290,6 +398,7 @@ class BpfRunResult:
     accepted: bool
     ret_value: int
     trace_path: Path
+    report_path: Path
 
 
 class BpfPythonTB:
@@ -297,9 +406,11 @@ class BpfPythonTB:
         self.dut = dut
         self.trace_path = Path(trace_path)
         self.trace_path.parent.mkdir(parents=True, exist_ok=True)
+        self.report_path = self.trace_path.with_suffix(".md")
         self._cycle = 0
         self._trace_rows: list[dict[str, int]] = []
         self._loaded_program: list[int] = []
+        self._loaded_packet: bytes = b""
 
     def init_signals(self) -> None:
         self.dut.bpf_start @= 0
@@ -379,6 +490,7 @@ class BpfPythonTB:
         return value
 
     def load_packet(self, packet: bytes, base_addr: int = 0) -> None:
+        self._loaded_packet = packet
         self.dut.bpf_packet_len @= len(packet)
         for offset in range(0, len(packet), 4):
             chunk = packet[offset:offset + 4].ljust(4, b"\x00")
@@ -415,13 +527,35 @@ class BpfPythonTB:
             self._tick()
         returned = bool(int(self.dut.bpf_return))
         self._flush_trace()
-        return BpfRunResult(
+        result = BpfRunResult(
             cycles=self._cycle,
             returned=returned,
             accepted=bool(int(self.dut.bpf_accept)),
             ret_value=int(self.dut.bpf_ret_value),
             trace_path=self.trace_path,
+            report_path=self.report_path,
         )
+        self._write_report(result)
+        return result
+
+    def _write_report(self, result: BpfRunResult) -> None:
+        lines = [
+            "# BPF Integration Report",
+            "",
+            "## Result",
+            "",
+            "| Field | Value |",
+            "| --- | --- |",
+            f"| Cycles | `{result.cycles}` |",
+            f"| Returned | `{result.returned}` |",
+            f"| Accepted | `{result.accepted}` |",
+            f"| Return Value | `0x{result.ret_value:08x}` |",
+            f"| CSV Trace | `{result.trace_path}` |",
+            "",
+            packet_report_markdown(self._loaded_packet),
+            program_report_markdown(self._loaded_program),
+        ]
+        result.report_path.write_text("\n".join(lines), encoding="utf-8")
 
     def print_packet_summary(self, packet: bytes) -> None:
         print(analyze_packet(packet))
@@ -434,5 +568,5 @@ class BpfPythonTB:
             "Run result: "
             f"cycles={result.cycles} returned={result.returned} "
             f"accepted={result.accepted} ret_value=0x{result.ret_value:08x} "
-            f"trace={result.trace_path}"
+            f"trace={result.trace_path} report={result.report_path}"
         )
