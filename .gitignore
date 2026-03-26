@@ -16,8 +16,6 @@ obj_dir/
 .vscode/
 
 
-bpf_test/
-
 .pytest_cache/
 
 build/
