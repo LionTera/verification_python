@@ -21,4 +21,8 @@ python -m py_compile \
   tests/integration/test_bpf_env_tcp_port_filter.py \
   tests/integration/test_bpf_env_tcp.py
 
+if [[ "${BPF_WAVEFORM:-}" != "" ]]; then
+  echo "Waveforms enabled via BPF_WAVEFORM=${BPF_WAVEFORM}"
+fi
+
 pytest -s -m integration tests/integration/test_bpf_env_smoke.py tests/integration/test_bpf_env_accept_reject.py tests/integration/test_bpf_env_tcp_port_filter.py tests/integration/test_bpf_env_tcp.py

@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from tests.bpf_env.bpf_python_tb import BpfPythonTB, RET_K_OPCODE, encode_bpf_instruction
-from tests.bpf_env.dut_builders import build_bpf_env, verilator_available
+from tests.bpf_env.dut_builders import build_bpf_env, verilator_available, waveform_path_for_test
 from tests.bpf_env.packets import make_tcp_packet
 
 
@@ -15,7 +15,7 @@ def test_bpf_env_tcp():
         pytest.skip("verilator is not installed")
 
     packet = make_tcp_packet()
-    dut = build_bpf_env()
+    dut = build_bpf_env(waveform=waveform_path_for_test("test_bpf_env_tcp"))
     tb = BpfPythonTB(dut, trace_path=Path("reports") / "bpf_trace.csv")
     program = [encode_bpf_instruction(RET_K_OPCODE, k=1)]
     tb.init_signals()

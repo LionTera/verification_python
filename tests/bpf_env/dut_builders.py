@@ -29,6 +29,7 @@ REPO_PATH_MARKERS = (
     "pymtl",
     "verilator",
 )
+WAVEFORM_ENV_VAR = "BPF_WAVEFORM"
 
 
 class PatchedVerilogImportPass(VerilogVerilatorImportPass):
@@ -125,6 +126,20 @@ def verilator_available() -> bool:
     if os.name == "nt":
         _prepare_windows_verilator_env()
     return shutil.which("verilator") is not None
+
+
+def waveform_enabled() -> bool:
+    value = os.environ.get(WAVEFORM_ENV_VAR, "")
+    return value.strip().lower() not in {"", "0", "false", "no", "off"}
+
+
+def waveform_path_for_test(test_name: str) -> Path | None:
+    if not waveform_enabled():
+        return None
+    safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", test_name).strip("._")
+    if not safe_name:
+        safe_name = "bpf_waveform"
+    return REPO_ROOT / "reports" / f"{safe_name}"
 
 
 def _cleanup_pymtl_artifacts() -> None:

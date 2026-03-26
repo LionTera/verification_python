@@ -236,10 +236,38 @@ Run the current BPF integration set:
 
 ## Waveforms
 
-The DUT builder supports optional Verilator waveform output:
+The DUT builder supports optional Verilator waveform output.
+
+For direct Python use:
 
 ```python
 dut = build_bpf_env(waveform="reports/my_waveform")
 ```
 
 This enables `vl_trace` on the imported Verilator model and writes a VCD using the requested base filename.
+
+For normal test runs, waveforms can be enabled from the shell with:
+
+```bash
+BPF_WAVEFORM=1 pytest -s tests/integration/test_bpf_env_tcp.py
+```
+
+or:
+
+```bash
+BPF_WAVEFORM=1 ./tools/run_bpf_integration_linux.sh
+```
+
+When enabled, each test writes a separate waveform into `reports/` using the test name or trace name as the base filename.
+
+To view the resulting `.vcd` files, you typically use a waveform viewer such as:
+
+- `gtkwave` on Linux
+- any other VCD-capable viewer you prefer
+
+Example on Ubuntu:
+
+```bash
+sudo apt-get install gtkwave
+gtkwave reports/test_bpf_env_tcp.verilator1.vcd
+```

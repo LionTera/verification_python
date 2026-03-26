@@ -5,12 +5,12 @@ from pathlib import Path
 import pytest
 
 from tests.bpf_env.bpf_python_tb import BpfPythonTB, RET_K_OPCODE, encode_bpf_instruction
-from tests.bpf_env.dut_builders import build_bpf_env, verilator_available
+from tests.bpf_env.dut_builders import build_bpf_env, verilator_available, waveform_path_for_test
 from tests.bpf_env.packets import make_tcp_packet
 
 
 def _run_ret_k_program(ret_value: int):
-    dut = build_bpf_env()
+    dut = build_bpf_env(waveform=waveform_path_for_test(f"test_bpf_env_ret_k_{ret_value}"))
     tb = BpfPythonTB(dut, trace_path=Path("reports") / f"bpf_ret_{ret_value}.csv")
     packet = make_tcp_packet()
     program = [encode_bpf_instruction(RET_K_OPCODE, k=ret_value)]
