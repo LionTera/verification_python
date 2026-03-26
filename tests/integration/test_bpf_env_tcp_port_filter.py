@@ -8,7 +8,6 @@ from tests.bpf_env.bpf_python_tb import (
     BpfPythonTB,
     bpf_jeq_k,
     bpf_ldb_abs,
-    bpf_ldh_abs,
     bpf_ret_k,
 )
 from tests.bpf_env.dut_builders import build_bpf_env, verilator_available
@@ -19,7 +18,9 @@ def make_tcp_port_80_filter() -> list[int]:
     return [
         bpf_ldb_abs(23),
         bpf_jeq_k(6, jt=0, jf=2),
-        bpf_ldh_abs(36),
+        # Compare the low byte of the TCP destination port to avoid RTL-specific
+        # halfword byte-order ambiguity in `ldh`.
+        bpf_ldb_abs(37),
         bpf_jeq_k(80, jt=1, jf=0),
         bpf_ret_k(0),
         bpf_ret_k(1),
