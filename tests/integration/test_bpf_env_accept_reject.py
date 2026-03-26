@@ -12,12 +12,19 @@ from tests.bpf_env.packets import make_tcp_packet
 def _run_ret_k_program(ret_value: int):
     dut = build_bpf_env()
     tb = BpfPythonTB(dut, trace_path=Path("reports") / f"bpf_ret_{ret_value}.csv")
+    packet = make_tcp_packet()
+    program = [encode_bpf_instruction(RET_K_OPCODE, k=ret_value)]
     tb.init_signals()
-    tb.load_packet(make_tcp_packet())
-    tb.load_program([encode_bpf_instruction(RET_K_OPCODE, k=ret_value)])
+    print(f"Testing RET_K path with k={ret_value}")
+    tb.print_packet_summary(packet)
+    tb.load_packet(packet)
+    tb.load_program(program)
+    tb.print_program()
     tb.configure_start_address(0)
     tb.pulse_start()
-    return tb.run_until_return(max_cycles=64)
+    result = tb.run_until_return(max_cycles=64)
+    tb.print_run_result(result)
+    return result
 
 
 @pytest.mark.integration

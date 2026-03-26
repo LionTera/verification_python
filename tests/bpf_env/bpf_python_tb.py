@@ -19,6 +19,34 @@ def encode_bpf_instruction(code: int, *, jt: int = 0, jf: int = 0, k: int = 0) -
     return ((code & 0xFF) << 48) | ((jt & 0xFF) << 40) | ((jf & 0xFF) << 32) | (k & 0xFFFFFFFF)
 
 
+def decode_bpf_instruction(instruction: int) -> dict[str, int]:
+    return {
+        "code": (instruction >> 48) & 0xFF,
+        "jt": (instruction >> 40) & 0xFF,
+        "jf": (instruction >> 32) & 0xFF,
+        "k": instruction & 0xFFFFFFFF,
+    }
+
+
+def format_bpf_instruction(instruction: int) -> str:
+    decoded = decode_bpf_instruction(instruction)
+    mnemonic = {
+        RET_K_OPCODE: "RET_K",
+        RET_A_OPCODE: "RET_A",
+    }.get(decoded["code"], f"OP_0x{decoded['code']:02x}")
+    return (
+        f"{mnemonic} "
+        f"(code=0x{decoded['code']:02x}, jt={decoded['jt']}, jf={decoded['jf']}, k=0x{decoded['k']:08x})"
+    )
+
+
+def format_bpf_program(instructions: Iterable[int]) -> str:
+    lines = ["BPF program:"]
+    for index, instruction in enumerate(instructions):
+        lines.append(f"  [{index:02d}] 0x{instruction:016x}  {format_bpf_instruction(instruction)}")
+    return "\n".join(lines)
+
+
 @dataclass
 class BpfRunResult:
     cycles: int
@@ -35,6 +63,7 @@ class BpfPythonTB:
         self.trace_path.parent.mkdir(parents=True, exist_ok=True)
         self._cycle = 0
         self._trace_rows: list[dict[str, int]] = []
+        self._loaded_program: list[int] = []
 
     def init_signals(self) -> None:
         self.dut.bpf_start @= 0
@@ -126,7 +155,8 @@ class BpfPythonTB:
             self._tick()
 
     def load_program(self, instructions: Iterable[int], base_addr: int = BPF_IRAM_ADDR) -> None:
-        for index, instruction in enumerate(instructions):
+        self._loaded_program = list(instructions)
+        for index, instruction in enumerate(self._loaded_program):
             low_word = instruction & 0xFFFFFFFF
             high_word = (instruction >> 32) & 0xFFFFFFFF
             self.write_mmap(base_addr + index * 2, low_word)
@@ -155,4 +185,19 @@ class BpfPythonTB:
             accepted=bool(int(self.dut.bpf_accept)),
             ret_value=int(self.dut.bpf_ret_value),
             trace_path=self.trace_path,
+        )
+
+    def print_packet_summary(self, packet: bytes) -> None:
+        print(f"Packet length: {len(packet)} bytes")
+        print(f"Packet bytes:  {packet.hex()}")
+
+    def print_program(self) -> None:
+        print(format_bpf_program(self._loaded_program))
+
+    def print_run_result(self, result: BpfRunResult) -> None:
+        print(
+            "Run result: "
+            f"cycles={result.cycles} returned={result.returned} "
+            f"accepted={result.accepted} ret_value=0x{result.ret_value:08x} "
+            f"trace={result.trace_path}"
         )
