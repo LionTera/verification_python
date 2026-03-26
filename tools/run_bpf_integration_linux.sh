@@ -18,6 +18,7 @@ python -m py_compile \
   tests/bpf_env/packets.py \
   tests/integration/test_bpf_env_smoke.py \
   tests/integration/test_bpf_env_accept_reject.py \
+  tests/integration/test_bpf_env_tcp_port_filter.py \
   tests/integration/test_bpf_env_tcp.py
 
-pytest -s -m integration tests/integration/test_bpf_env_smoke.py tests/integration/test_bpf_env_accept_reject.py tests/integration/test_bpf_env_tcp.py
+pytest -s -m integration tests/integration/test_bpf_env_smoke.py tests/integration/test_bpf_env_accept_reject.py tests/integration/test_bpf_env_tcp_port_filter.py tests/integration/test_bpf_env_tcp.py

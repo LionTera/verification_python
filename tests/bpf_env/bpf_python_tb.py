@@ -67,6 +67,30 @@ def encode_bpf_instruction(code: int, *, jt: int = 0, jf: int = 0, k: int = 0) -
     return ((code & 0xFF) << 48) | ((jt & 0xFF) << 40) | ((jf & 0xFF) << 32) | (k & 0xFFFFFFFF)
 
 
+def bpf_stmt(code: int, k: int = 0) -> int:
+    return encode_bpf_instruction(code, k=k)
+
+
+def bpf_jump(code: int, k: int, jt: int, jf: int) -> int:
+    return encode_bpf_instruction(code, jt=jt, jf=jf, k=k)
+
+
+def bpf_ldb_abs(offset: int) -> int:
+    return bpf_stmt(BPF_LD | BPF_B | BPF_ABS, offset)
+
+
+def bpf_ldh_abs(offset: int) -> int:
+    return bpf_stmt(BPF_LD | BPF_H | BPF_ABS, offset)
+
+
+def bpf_jeq_k(value: int, *, jt: int, jf: int) -> int:
+    return bpf_jump(BPF_JMP | BPF_JEQ | BPF_K, value, jt, jf)
+
+
+def bpf_ret_k(value: int) -> int:
+    return bpf_stmt(BPF_RET | BPF_K, value)
+
+
 def decode_bpf_instruction(instruction: int) -> dict[str, int]:
     return {
         "code": (instruction >> 48) & 0xFF,
