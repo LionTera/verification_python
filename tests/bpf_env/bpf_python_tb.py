@@ -11,6 +11,9 @@ from typing import Iterable
 LOGGER = logging.getLogger(__name__)
 
 BPF_START_ADDR = 0x1000
+BPF_ACCEPT_COUNTER_ADDR = 0x1010
+BPF_REJECT_COUNTER_ADDR = 0x1011
+BPF_PACKET_LOSS_COUNTER_ADDR = 0x1012
 BPF_IRAM_ADDR = 0x2000
 BPF_CLASS_MASK = 0x07
 BPF_SIZE_MASK = 0x18
@@ -463,6 +466,7 @@ class BpfPythonTB:
         row = {
             "cycle": self._cycle,
             "bpf_start": int(self.dut.bpf_start),
+            "bpf_packet_loss": int(self.dut.bpf_packet_loss),
             "bpf_return": int(self.dut.bpf_return),
             "bpf_accept": int(self.dut.bpf_accept),
             "bpf_active": int(self.dut.bpf_active),
@@ -503,6 +507,12 @@ class BpfPythonTB:
             raise TimeoutError(f"write_mmap ack timeout at 0x{addr:04x}")
         self.dut.bpf_mmap_wr @= 0
         self._tick()
+
+    def set_packet_loss(self, value: int | bool) -> None:
+        self.dut.bpf_packet_loss @= 1 if value else 0
+
+    def step(self, cycles: int = 1) -> None:
+        self._tick(cycles)
 
     def read_mmap(self, addr: int, timeout: int = 20) -> int:
         self.dut.bpf_mmap_addr @= addr

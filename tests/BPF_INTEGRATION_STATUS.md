@@ -158,6 +158,58 @@ What it checks:
 - waveform users can correlate `bpf_pram_waddr` and `bpf_pram_wdata` with real packet header fields
 - the DUT still executes to completion under a trivial known-good program
 
+### Packet header walk test
+
+File:
+
+- `tests/integration/test_bpf_env_packet_header_walk.py`
+- `tests/integration/test_bpf_env_packet_header_walk.md`
+
+What it checks:
+
+- a real multi-instruction BPF program checks several packet-header fields
+- the test probes DUT-visible offsets before building the final program
+- waveform users can correlate packet writes, program writes, packet reads, and final return value
+
+### Packet-loss counter test
+
+File:
+
+- `tests/integration/test_bpf_env_packet_loss_counter.py`
+- `tests/integration/test_bpf_env_packet_loss_counter.md`
+
+What it checks:
+
+- MMAP clear behavior at `0x1012`
+- MMAP readback of the packet-loss counter
+- per-cycle increment behavior when `bpf_packet_loss=1`
+
+### Packet-loss long-run test
+
+File:
+
+- `tests/integration/test_bpf_env_packet_loss_long_run.py`
+- `tests/integration/test_bpf_env_packet_loss_long_run.md`
+
+What it checks:
+
+- repeated accepted packet runs
+- packet-loss injection across multiple iterations
+- final MMAP counter totals for accept, reject, and packet loss
+
+### Long program with packet-loss test
+
+File:
+
+- `tests/integration/test_bpf_env_long_program_with_packet_loss.py`
+- `tests/integration/test_bpf_env_long_program_with_packet_loss.md`
+
+What it checks:
+
+- a longer multi-step BPF program with repeated header checks
+- packet-loss injection while `bpf_active=1`
+- final MMAP packet-loss counter value after active-time injection
+
 ### TCP port filter test
 
 File:
