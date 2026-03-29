@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import importlib
 import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 from contextlib import contextmanager
 import re
@@ -197,6 +199,44 @@ def _set_translation_metadata(dut) -> None:
     dut.set_metadata(VerilogTranslationPass.translated_top_module, top_module)
 
 
+def _patch_imported_wrapper_vcd(vcd_path: Path) -> None:
+    candidates = sorted(Path(".").glob("BpfEnv*_v.py"))
+    if not candidates:
+        return
+    path = candidates[0]
+    text = path.read_text(encoding="utf-8")
+    vcd_literal = str(vcd_path).replace("\\", "/").replace("'", "\\'")
+    pattern = (
+        r"(\s+# Set up the VCD file name\s+)"
+        r"verilator_vcd_file = \"\"\s+"
+        r"if 0:\s+"
+        r"if False:\s+"
+        r"verilator_vcd_file = \".verilator1\.vcd\"\s+"
+        r"else:\s+"
+        r"verilator_vcd_file = \"[^\"]+\""
+    )
+    replacement = (
+        "\\1"
+        f"verilator_vcd_file = '{vcd_literal}'"
+    )
+    updated = re.sub(pattern, replacement, text, count=1)
+    if updated != text:
+        path.write_text(updated, encoding="utf-8")
+
+
+def _reload_imported_dut(dut):
+    module_name = dut.__class__.__module__
+    class_name = dut.__class__.__name__
+    dut.finalize()
+    importlib.invalidate_caches()
+    if module_name in sys.modules:
+        module = importlib.reload(sys.modules[module_name])
+    else:
+        module = importlib.import_module(module_name)
+    imported_cls = getattr(module, class_name)
+    return imported_cls()
+
+
 def build_bpf_env(*, waveform: str | os.PathLike[str] | None = None):
     if not verilator_available():
         raise RuntimeError("verilator is required for VerilogTranslationImportPass")
@@ -237,6 +277,10 @@ def build_bpf_env(*, waveform: str | os.PathLike[str] | None = None):
             import_cfg.c_include_path = [str(VERILATOR_ROOT / "build" / "include")]
         dut.set_metadata(VerilogVerilatorImportPass.import_config, import_cfg)
         dut = PatchedVerilogImportPass()(dut)
+        if waveform is not None:
+            waveform_path = Path(waveform).with_suffix(".verilator1.vcd")
+            _patch_imported_wrapper_vcd(waveform_path)
+            dut = _reload_imported_dut(dut)
         dut.apply(DefaultPassGroup())
         dut.sim_reset()
         return dut
