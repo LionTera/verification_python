@@ -16,6 +16,59 @@ Rejected cases:
 - Ethernet + IPv4 + TCP with destination port `443`
 - Ethernet + IPv4 + UDP with destination port `80`
 
+### Human-Readable Packet Structure
+
+TCP packet used for port filtering:
+
+```text
+Ethernet Header (14 bytes)
+  dst_mac    = 02:00:00:00:00:02
+  src_mac    = 02:00:00:00:00:01
+  eth_type   = 0x0800  (IPv4)
+
+IPv4 Header (20 bytes)
+  version    = 4
+  ihl        = 20 bytes
+  total_len  = 40 bytes
+  ttl        = 64
+  protocol   = 6       (TCP)
+  src_ip     = 192.168.1.10
+  dst_ip     = 192.168.1.20
+
+TCP Header (20 bytes)
+  src_port   = 1234
+  dst_port   = 80 or 443
+  seq_num    = 1
+  ack_num    = 0
+  flags      = SYN
+  window     = 4096
+  payload    = empty
+```
+
+UDP packet used for protocol rejection:
+
+```text
+Ethernet Header (14 bytes)
+  dst_mac    = 02:00:00:00:00:02
+  src_mac    = 02:00:00:00:00:01
+  eth_type   = 0x0800  (IPv4)
+
+IPv4 Header (20 bytes)
+  version    = 4
+  ihl        = 20 bytes
+  total_len  = 28 bytes
+  ttl        = 64
+  protocol   = 17      (UDP)
+  src_ip     = 192.168.1.10
+  dst_ip     = 192.168.1.20
+
+UDP Header (8 bytes)
+  src_port   = 1234
+  dst_port   = 80
+  length     = 8
+  payload    = empty
+```
+
 ## Program Under Test
 
 ```text
@@ -74,3 +127,45 @@ Reason:
 
 - this RTL does not expose packet bytes at exactly the same offsets a software BPF implementation would assume
 - probing avoids hardcoding an offset that is wrong for the hardware datapath
+
+## Waveform Guide
+
+Run with waveform dumping enabled:
+
+```bash
+BPF_WAVEFORM=1 pytest -s tests/integration/test_bpf_env_tcp_port_filter.py
+```
+
+Open the waveform:
+
+```bash
+gtkwave reports/test_bpf_env_tcp_port_filter.verilator1.vcd
+```
+
+Recommended signals:
+
+- `clk`
+- `reset`
+- `bpf_start`
+- `bpf_active`
+- `bpf_return`
+- `bpf_accept`
+- `bpf_ret_value`
+- `bpf_packet_len`
+- `bpf_pram_waddr`
+- `bpf_pram_wdata`
+- `bpf_pram_wr`
+- `bpf_pram_raddr`
+- `bpf_pram_rdata`
+- `bpf_mmap_addr`
+- `bpf_mmap_wdata`
+- `bpf_mmap_wr`
+- `bpf_mmap_ack`
+
+How to inspect the filter:
+
+1. Watch `bpf_pram_wr` while the packet is loaded.
+2. Watch `bpf_mmap_wr` while the probe programs and final filter are written.
+3. Find `bpf_start` for the actual execution run.
+4. While `bpf_active=1`, watch packet RAM reads on `bpf_pram_raddr` and `bpf_pram_rdata`.
+5. At completion, check `bpf_return`, `bpf_accept`, and `bpf_ret_value`.

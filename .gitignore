@@ -40,3 +40,5 @@ reports/bpf_udp*_*.csv
 reports/bpf_udp*_*.md
 reports/bpf_probe_*.csv
 reports/bpf_probe_*.md
+
+bpf_test/

@@ -144,6 +144,20 @@ What it checks:
 - the DUT handles the packet under the current trivial return program
 - trace/report artifacts are generated
 
+### Packet header probe test
+
+File:
+
+- `tests/integration/test_bpf_env_packet_header_probe.py`
+- `tests/integration/test_bpf_env_packet_header_probe.md`
+
+What it checks:
+
+- a deliberately distinctive TCP packet is loaded into packet RAM
+- the generated report includes a packet-memory-word table
+- waveform users can correlate `bpf_pram_waddr` and `bpf_pram_wdata` with real packet header fields
+- the DUT still executes to completion under a trivial known-good program
+
 ### TCP port filter test
 
 File:
@@ -190,6 +204,30 @@ Example instruction output:
 BPF program:
   [00] 0x0600000000000001  ret #1    ; RET_K (code=0x06, jt=0, jf=0, k=0x00000001)
 ```
+
+## Packet Docs And Reports
+
+Each integration test now has two documentation layers:
+
+- an authored test note in `tests/integration/*.md`
+- a generated run report in `reports/*.md`
+
+The authored test note explains:
+
+- what the test is checking
+- the packet structure in human-readable form
+- the BPF program under test
+- the expected result
+- how to inspect the waveform
+
+The generated run report captures:
+
+- the raw packet bytes
+- decoded Ethernet fields
+- decoded IPv4 fields
+- decoded TCP or UDP fields when present
+- the BPF program listing
+- the final DUT result
 
 ## What Is Still Missing
 
@@ -271,3 +309,31 @@ Example on Ubuntu:
 sudo apt-get install gtkwave
 gtkwave reports/test_bpf_env_tcp.verilator1.vcd
 ```
+
+Recommended first signals to inspect:
+
+- `clk`
+- `reset`
+- `bpf_start`
+- `bpf_active`
+- `bpf_return`
+- `bpf_accept`
+- `bpf_ret_value`
+- `bpf_packet_len`
+- `bpf_pram_waddr`
+- `bpf_pram_wdata`
+- `bpf_pram_wr`
+- `bpf_pram_raddr`
+- `bpf_pram_rdata`
+- `bpf_mmap_addr`
+- `bpf_mmap_wdata`
+- `bpf_mmap_wr`
+- `bpf_mmap_ack`
+
+Suggested reading order:
+
+1. Watch packet RAM writes through `bpf_pram_wr`.
+2. Watch program and control writes through `bpf_mmap_wr`.
+3. Find the `bpf_start` pulse.
+4. Follow execution while `bpf_active=1`.
+5. Check `bpf_return`, `bpf_accept`, and `bpf_ret_value` for the final verdict.
