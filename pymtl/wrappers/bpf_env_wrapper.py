@@ -33,16 +33,17 @@ class BpfEnv( Component, VerilogPlaceholder ):
         s.bpf_pram_bank_rx = InPort( Bits2 )
         s.bpf_pram_bank_bpf = InPort( Bits2 )
         s.bpf_pram_bank_tx = InPort( Bits2 )
+        s.tb_cycle_counter = OutPort( Bits32 )
 
         base = abspath( join( dirname(__file__), "..", ".." ) )
 
         s.set_metadata(
             VerilogPlaceholderPass.src_file,
-            join( base, "bpf_test/u2u_v401/tf_bpf/rtl/bpf_env.v" ),
+            join( base, "pymtl/wrappers/bpf_env_tb_wrapper.v" ),
         )
         s.set_metadata(
             VerilogPlaceholderPass.top_module,
-            "bpf_env",
+            "bpf_env_tb_wrapper",
         )
         s.set_metadata(
             VerilogPlaceholderPass.params,

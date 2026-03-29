@@ -699,6 +699,7 @@ class BpfPythonTB:
             "bpf_pram_waddr": int(self.dut.bpf_pram_waddr),
             "bpf_pram_wr": int(self.dut.bpf_pram_wr),
             "bpf_pram_raddr": int(self.dut.bpf_pram_raddr),
+            "tb_cycle_counter": int(self.dut.tb_cycle_counter),
         }
         row.update(packet_csv_fields(self._loaded_packet))
         self._trace_rows.append(row)
