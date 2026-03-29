@@ -15,7 +15,7 @@ obj_dir/
 .idea/
 .vscode/
 
-
+*.pdf
 .pytest_cache/
 
 build/

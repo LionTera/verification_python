@@ -376,6 +376,36 @@ def packet_report_markdown(packet: bytes) -> str:
     return "\n".join(lines)
 
 
+def packet_memory_map_text(packet: bytes) -> str:
+    lines = ["Packet memory words:"]
+    for offset in range(0, len(packet), 4):
+        chunk = packet[offset:offset + 4]
+        padded = chunk.ljust(4, b"\x00")
+        lines.append(
+            f"  addr=0x{offset:04x} bytes[{offset:02d}:{offset + len(chunk) - 1:02d}] "
+            f"word=0x{int.from_bytes(padded, 'big'):08x} raw={chunk.hex()}"
+        )
+    return "\n".join(lines)
+
+
+def packet_memory_map_markdown(packet: bytes) -> str:
+    lines = [
+        "### Packet Memory Words",
+        "",
+        "| PRAM Address | Packet Byte Range | 32-bit Word | Raw Bytes |",
+        "| --- | --- | --- | --- |",
+    ]
+    for offset in range(0, len(packet), 4):
+        chunk = packet[offset:offset + 4]
+        padded = chunk.ljust(4, b"\x00")
+        lines.append(
+            f"| `0x{offset:04x}` | `{offset}-{offset + len(chunk) - 1}` | "
+            f"`0x{int.from_bytes(padded, 'big'):08x}` | `{chunk.hex()}` |"
+        )
+    lines.append("")
+    return "\n".join(lines)
+
+
 def program_report_markdown(instructions: Iterable[int]) -> str:
     lines = [
         "## BPF Program",
@@ -553,12 +583,16 @@ class BpfPythonTB:
             f"| CSV Trace | `{result.trace_path}` |",
             "",
             packet_report_markdown(self._loaded_packet),
+            packet_memory_map_markdown(self._loaded_packet),
             program_report_markdown(self._loaded_program),
         ]
         result.report_path.write_text("\n".join(lines), encoding="utf-8")
 
     def print_packet_summary(self, packet: bytes) -> None:
         print(analyze_packet(packet))
+
+    def print_packet_memory_map(self, packet: bytes) -> None:
+        print(packet_memory_map_text(packet))
 
     def print_program(self) -> None:
         print(format_bpf_program(self._loaded_program))
