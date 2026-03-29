@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import tempfile
 from contextlib import contextmanager
 import re
 
@@ -142,11 +143,11 @@ def full_artifacts_enabled() -> bool:
 def waveform_path_for_test(test_name: str, *, probe: bool = False) -> Path | None:
     if not waveform_enabled():
         return None
-    if probe and not full_artifacts_enabled():
-        return None
     safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", test_name).strip("._")
     if not safe_name:
         safe_name = "bpf_waveform"
+    if probe and not full_artifacts_enabled():
+        return Path(tempfile.gettempdir()) / "vp_probe_waveforms" / safe_name
     return REPO_ROOT / "reports" / f"{safe_name}"
 
 
