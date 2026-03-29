@@ -2,12 +2,16 @@
 
 ## Purpose
 
-Run a large deterministic traffic stream through one DUT instance:
+Run a large deterministic traffic stream through one DUT instance.
+
+Defaults:
 
 - `5000` packets total
 - exact random seed for reproducibility
 - exactly `250` one-cycle packet-loss injections
 - mixed accepted and rejected traffic
+
+You can override the packet count and related parameters at runtime with environment variables.
 
 This is a stress-style learning test. The main goal is to correlate:
 
@@ -106,6 +110,19 @@ Main artifacts only:
 ```bash
 BPF_REPORTS=1 BPF_WAVEFORM=1 pytest -s tests/integration/test_bpf_env_random_traffic_5000_loss.py
 ```
+
+Override the packet count:
+
+```bash
+BPF_PACKET_COUNT=1000 BPF_REPORTS=1 BPF_WAVEFORM=1 pytest -s tests/integration/test_bpf_env_random_traffic_5000_loss.py
+```
+
+Available runtime knobs:
+
+- `BPF_PACKET_COUNT`
+- `BPF_PACKET_LOSS_PERCENT`
+- `BPF_PACKET_RNG_SEED`
+- `BPF_PACKET_PROGRESS_INTERVAL`
 
 If you also want probe artifacts:
 

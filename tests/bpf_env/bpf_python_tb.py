@@ -299,6 +299,102 @@ def analyze_packet(packet: bytes) -> str:
     return "\n".join(lines)
 
 
+def packet_csv_fields(packet: bytes) -> dict[str, str | int]:
+    fields: dict[str, str | int] = {
+        "packet_len": len(packet),
+        "packet_raw": packet.hex(),
+        "packet_l2": "",
+        "packet_l3": "",
+        "packet_l4": "",
+        "eth_dst_mac": "",
+        "eth_src_mac": "",
+        "eth_type": "",
+        "ipv4_version": "",
+        "ipv4_ihl": "",
+        "ipv4_total_length": "",
+        "ipv4_ttl": "",
+        "ipv4_protocol": "",
+        "ipv4_src_ip": "",
+        "ipv4_dst_ip": "",
+        "ipv4_header_raw": "",
+        "tcp_src_port": "",
+        "tcp_dst_port": "",
+        "tcp_seq": "",
+        "tcp_ack": "",
+        "tcp_flags": "",
+        "tcp_window": "",
+        "tcp_checksum": "",
+        "tcp_header_raw": "",
+        "udp_src_port": "",
+        "udp_dst_port": "",
+        "udp_length": "",
+        "udp_checksum": "",
+        "udp_header_raw": "",
+        "l4_payload_raw": "",
+    }
+
+    if len(packet) < 14:
+        return fields
+
+    fields["packet_l2"] = "ethernet"
+    fields["eth_dst_mac"] = _format_mac(packet[0:6])
+    fields["eth_src_mac"] = _format_mac(packet[6:12])
+    eth_type = int.from_bytes(packet[12:14], "big")
+    fields["eth_type"] = f"0x{eth_type:04x}"
+
+    if eth_type != 0x0800 or len(packet) < 34:
+        return fields
+
+    fields["packet_l3"] = "ipv4"
+    ipv4 = packet[14:]
+    version = ipv4[0] >> 4
+    ihl = (ipv4[0] & 0x0F) * 4
+    total_length = int.from_bytes(ipv4[2:4], "big")
+    ttl = ipv4[8]
+    protocol = ipv4[9]
+    src_ip = str(ipaddress.ip_address(ipv4[12:16]))
+    dst_ip = str(ipaddress.ip_address(ipv4[16:20]))
+    fields["ipv4_version"] = version
+    fields["ipv4_ihl"] = ihl
+    fields["ipv4_total_length"] = total_length
+    fields["ipv4_ttl"] = ttl
+    fields["ipv4_protocol"] = protocol
+    fields["ipv4_src_ip"] = src_ip
+    fields["ipv4_dst_ip"] = dst_ip
+    fields["ipv4_header_raw"] = packet[14:14 + min(ihl, len(ipv4))].hex()
+
+    l4_start = 14 + ihl
+    if len(packet) < l4_start:
+        return fields
+
+    if protocol == 6 and len(packet) >= l4_start + 20:
+        fields["packet_l4"] = "tcp"
+        tcp = packet[l4_start:]
+        data_offset = (tcp[12] >> 4) * 4
+        fields["tcp_src_port"] = int.from_bytes(tcp[0:2], "big")
+        fields["tcp_dst_port"] = int.from_bytes(tcp[2:4], "big")
+        fields["tcp_seq"] = int.from_bytes(tcp[4:8], "big")
+        fields["tcp_ack"] = int.from_bytes(tcp[8:12], "big")
+        fields["tcp_flags"] = _format_tcp_flags(tcp[13])
+        fields["tcp_window"] = int.from_bytes(tcp[14:16], "big")
+        fields["tcp_checksum"] = f"0x{int.from_bytes(tcp[16:18], 'big'):04x}"
+        fields["tcp_header_raw"] = tcp[:data_offset].hex()
+        if l4_start + data_offset < len(packet):
+            fields["l4_payload_raw"] = packet[l4_start + data_offset:].hex()
+    elif protocol == 17 and len(packet) >= l4_start + 8:
+        fields["packet_l4"] = "udp"
+        udp = packet[l4_start:]
+        fields["udp_src_port"] = int.from_bytes(udp[0:2], "big")
+        fields["udp_dst_port"] = int.from_bytes(udp[2:4], "big")
+        fields["udp_length"] = int.from_bytes(udp[4:6], "big")
+        fields["udp_checksum"] = f"0x{int.from_bytes(udp[6:8], 'big'):04x}"
+        fields["udp_header_raw"] = udp[:8].hex()
+        if l4_start + 8 < len(packet):
+            fields["l4_payload_raw"] = packet[l4_start + 8:].hex()
+
+    return fields
+
+
 def packet_report_markdown(packet: bytes) -> str:
     lines = [
         "## Packet",
@@ -604,6 +700,7 @@ class BpfPythonTB:
             "bpf_pram_wr": int(self.dut.bpf_pram_wr),
             "bpf_pram_raddr": int(self.dut.bpf_pram_raddr),
         }
+        row.update(packet_csv_fields(self._loaded_packet))
         self._trace_rows.append(row)
         LOGGER.info("cycle=%d return=%d accept=%d ret=0x%08x", row["cycle"], row["bpf_return"], row["bpf_accept"], row["bpf_ret_value"])
 

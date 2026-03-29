@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import random
 from pathlib import Path
 
@@ -22,11 +23,42 @@ from tests.bpf_env.dut_builders import build_bpf_env, verilator_available, wavef
 from tests.bpf_env.packets import make_tcp_packet, make_udp_packet
 
 
-PACKET_COUNT = 5000
-LOSS_PERCENT = 5
-LOSS_COUNT = PACKET_COUNT * LOSS_PERCENT // 100
-RNG_SEED = 0x5EED5EED
-PROGRESS_INTERVAL = 250
+DEFAULT_PACKET_COUNT = 5000
+DEFAULT_LOSS_PERCENT = 5
+DEFAULT_RNG_SEED = 0x5EED5EED
+PACKET_COUNT_ENV_VAR = "BPF_PACKET_COUNT"
+LOSS_PERCENT_ENV_VAR = "BPF_PACKET_LOSS_PERCENT"
+RNG_SEED_ENV_VAR = "BPF_PACKET_RNG_SEED"
+PROGRESS_INTERVAL_ENV_VAR = "BPF_PACKET_PROGRESS_INTERVAL"
+
+
+def _get_positive_int_env(name: str, default: int) -> int:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    value = int(raw, 0)
+    if value <= 0:
+        raise ValueError(f"{name} must be > 0, got {value}")
+    return value
+
+
+def load_stress_config() -> dict[str, int]:
+    packet_count = _get_positive_int_env(PACKET_COUNT_ENV_VAR, DEFAULT_PACKET_COUNT)
+    loss_percent = _get_positive_int_env(LOSS_PERCENT_ENV_VAR, DEFAULT_LOSS_PERCENT)
+    rng_seed = _get_positive_int_env(RNG_SEED_ENV_VAR, DEFAULT_RNG_SEED)
+    progress_interval = _get_positive_int_env(
+        PROGRESS_INTERVAL_ENV_VAR,
+        max(1, min(250, packet_count // 20 or 1)),
+    )
+    if loss_percent > 100:
+        raise ValueError(f"{LOSS_PERCENT_ENV_VAR} must be <= 100, got {loss_percent}")
+    return {
+        "packet_count": packet_count,
+        "loss_percent": loss_percent,
+        "loss_count": packet_count * loss_percent // 100,
+        "rng_seed": rng_seed,
+        "progress_interval": progress_interval,
+    }
 
 
 def _probe_program(packet: bytes, program: list[int], trace_name: str, *, label: str):
@@ -154,6 +186,7 @@ def append_random_traffic_report(
     program: list[int],
     protocol_offset: int,
     dst_port_low_offset: int,
+    config: dict[str, int],
 ) -> None:
     accept_total = sum(1 for item in traffic_history if item["expected_accept"])
     reject_total = len(traffic_history) - accept_total
@@ -161,10 +194,10 @@ def append_random_traffic_report(
         "",
         "## Random Traffic Stress Summary",
         "",
-        f"- Packet count: `{PACKET_COUNT}`",
-        f"- Loss percent target: `{LOSS_PERCENT}%`",
-        f"- Loss event count: `{LOSS_COUNT}`",
-        f"- RNG seed: `0x{RNG_SEED:08x}`",
+        f"- Packet count: `{config['packet_count']}`",
+        f"- Loss percent target: `{config['loss_percent']}%`",
+        f"- Loss event count: `{config['loss_count']}`",
+        f"- RNG seed: `0x{config['rng_seed']:08x}`",
         f"- Protocol offset used by filter: `{protocol_offset}`",
         f"- Destination-port low-byte offset used by filter: `{dst_port_low_offset}`",
         f"- Expected accepted packets: `{accept_total}`",
@@ -211,6 +244,7 @@ def append_random_traffic_report(
 def test_bpf_env_random_traffic_5000_loss():
     if not verilator_available():
         pytest.skip("verilator is not installed")
+    config = load_stress_config()
 
     tcp_accept_probe = make_tcp_packet(
         dst_mac=bytes.fromhex("aabbccddeeff"),
@@ -257,14 +291,19 @@ def test_bpf_env_random_traffic_5000_loss():
     )
     program = make_tcp_dst_filter(protocol_offset, dst_port_low_offset, accepted_low_byte=0x78)
 
-    traffic = generate_packet_stream(PACKET_COUNT, seed=RNG_SEED)
-    loss_indices = set(random.Random(RNG_SEED ^ 0xA5A5A5A5).sample(range(PACKET_COUNT), LOSS_COUNT))
+    traffic = generate_packet_stream(config["packet_count"], seed=config["rng_seed"])
+    loss_indices = set(
+        random.Random(config["rng_seed"] ^ 0xA5A5A5A5).sample(range(config["packet_count"]), config["loss_count"])
+    )
 
     dut = build_bpf_env(waveform=waveform_path_for_test("test_bpf_env_random_traffic_5000_loss"))
     tb = BpfPythonTB(dut, trace_path=Path("reports") / "bpf_random_traffic_5000_loss.csv")
     tb.init_signals()
     print("Random traffic 5000-packet packet-loss stress test")
-    print(f"RNG seed=0x{RNG_SEED:08x} packet_count={PACKET_COUNT} loss_count={LOSS_COUNT}")
+    print(
+        f"RNG seed=0x{config['rng_seed']:08x} "
+        f"packet_count={config['packet_count']} loss_count={config['loss_count']}"
+    )
     print(f"Using protocol offset={protocol_offset}, dst_port_low_offset={dst_port_low_offset}")
     tb.load_program(program)
     tb.print_program()
@@ -331,7 +370,11 @@ def test_bpf_env_random_traffic_5000_loss():
             }
         )
 
-        should_check = index in loss_indices or index == PACKET_COUNT - 1 or ((index + 1) % PROGRESS_INTERVAL == 0)
+        should_check = (
+            index in loss_indices
+            or index == config["packet_count"] - 1
+            or ((index + 1) % config["progress_interval"] == 0)
+        )
         if should_check:
             accept_now = tb.read_mmap(BPF_ACCEPT_COUNTER_ADDR)
             reject_now = tb.read_mmap(BPF_REJECT_COUNTER_ADDR)
@@ -340,7 +383,7 @@ def test_bpf_env_random_traffic_5000_loss():
             assert reject_now == reject_expected
             assert loss_now == loss_expected
             print(
-                f"Progress packet {index + 1}/{PACKET_COUNT}: "
+                f"Progress packet {index + 1}/{config['packet_count']}: "
                 f"accept={accept_now} reject={reject_now} loss={loss_now}"
             )
 
@@ -355,7 +398,7 @@ def test_bpf_env_random_traffic_5000_loss():
 
     assert accept_count == accept_expected
     assert reject_count == reject_expected
-    assert packet_loss_count == LOSS_COUNT
+    assert packet_loss_count == config["loss_count"]
 
     if reports_enabled():
         assert tb.trace_path.exists()
@@ -367,4 +410,5 @@ def test_bpf_env_random_traffic_5000_loss():
             program=program,
             protocol_offset=protocol_offset,
             dst_port_low_offset=dst_port_low_offset,
+            config=config,
         )
