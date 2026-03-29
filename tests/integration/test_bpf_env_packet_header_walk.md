@@ -43,7 +43,7 @@ The test first probes the RTL to discover which packet byte offsets are visible 
 - TCP destination-port low byte
 - TCP sequence-number low byte
 - TCP acknowledgment-number low byte
-- TCP payload low byte
+- TCP first payload byte
 
 Then it builds and runs this final program:
 
@@ -56,8 +56,8 @@ ldb [seq_low_offset]
 jeq #0x04, jt 0, jf 4
 ldb [ack_low_offset]
 jeq #0xd4, jt 0, jf 2
-ldb [payload_low_offset]
-jeq #0xef, jt 1, jf 0
+ldb [payload_first_offset]
+jeq #0xde, jt 1, jf 0
 ret #0
 ret #0xa5
 ```

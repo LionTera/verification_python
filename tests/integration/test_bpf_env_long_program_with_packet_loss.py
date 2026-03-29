@@ -80,7 +80,7 @@ def make_long_learning_program(
     dst_port_low_offset: int,
     seq_low_offset: int,
     ack_low_offset: int,
-    payload_low_offset: int,
+    payload_first_offset: int,
 ) -> list[int]:
     return [
         bpf_ldb_abs(protocol_offset),
@@ -95,8 +95,8 @@ def make_long_learning_program(
         bpf_ldb_abs(ack_low_offset),
         bpf_jeq_k(0xD4, jt=1, jf=0),
         bpf_ret_k(0),
-        bpf_ldb_abs(payload_low_offset),
-        bpf_jeq_k(0xEF, jt=1, jf=0),
+        bpf_ldb_abs(payload_first_offset),
+        bpf_jeq_k(0xDE, jt=1, jf=0),
         bpf_ret_k(0),
         bpf_ldb_abs(dst_port_low_offset),
         bpf_jeq_k(0x78, jt=1, jf=0),
@@ -178,21 +178,21 @@ def test_bpf_env_long_program_with_packet_loss():
         seq=0x01020304,
         ack=0xA1B2C3D4,
         flags=0x12,
-        payload=bytes.fromhex("deadbeaa"),
+        payload=bytes.fromhex("aaadbeef"),
     )
 
     protocol_offset = discover_offset(packet, 0x06, udp_packet, 0x11, range(20, 28), name="protocol")
     dst_port_low_offset = discover_offset(packet, 0x78, dst_variant, 0xBB, range(34, 50), name="dst_port_low")
     seq_low_offset = discover_offset(packet, 0x04, seq_variant, 0xAA, range(38, 54), name="seq_low")
     ack_low_offset = discover_offset(packet, 0xD4, ack_variant, 0x55, range(42, 58), name="ack_low")
-    payload_low_offset = discover_offset(packet, 0xEF, payload_variant, 0xAA, range(46, 62), name="payload_low")
+    payload_first_offset = discover_offset(packet, 0xDE, payload_variant, 0xAA, range(46, 62), name="payload_first")
 
     program = make_long_learning_program(
         protocol_offset=protocol_offset,
         dst_port_low_offset=dst_port_low_offset,
         seq_low_offset=seq_low_offset,
         ack_low_offset=ack_low_offset,
-        payload_low_offset=payload_low_offset,
+        payload_first_offset=payload_first_offset,
     )
 
     tb = run_program(
@@ -202,7 +202,7 @@ def test_bpf_env_long_program_with_packet_loss():
         label=(
             "Learning test: long program with packet loss "
             f"(protocol={protocol_offset}, dst_low={dst_port_low_offset}, seq_low={seq_low_offset}, "
-            f"ack_low={ack_low_offset}, payload_low={payload_low_offset})"
+            f"ack_low={ack_low_offset}, payload_first={payload_first_offset})"
         ),
     )
     tb.write_mmap(BPF_PACKET_LOSS_COUNTER_ADDR, 0)
@@ -222,6 +222,7 @@ def test_bpf_env_long_program_with_packet_loss():
 
     result = tb.run_until_return(max_cycles=256)
     tb.print_run_result(result)
+    tb.step(1)
     loss_count = tb.read_mmap(BPF_PACKET_LOSS_COUNTER_ADDR)
     print(f"Packet-loss counter after active injection: 0x{loss_count:08x}")
 

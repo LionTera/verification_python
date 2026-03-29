@@ -44,7 +44,7 @@ The test first probes the RTL to discover offsets for:
 - TCP destination-port low byte
 - TCP sequence-number low byte
 - TCP acknowledgment-number low byte
-- TCP payload low byte
+- TCP first payload byte
 
 Then it builds a longer linear filter:
 
@@ -61,8 +61,8 @@ ret #0
 ldb [ack_low_offset]
 jeq #0xd4, jt 1, jf 0
 ret #0
-ldb [payload_low_offset]
-jeq #0xef, jt 1, jf 0
+ldb [payload_first_offset]
+jeq #0xde, jt 1, jf 0
 ret #0
 ldb [dst_port_low_offset]
 jeq #0x78, jt 1, jf 0
