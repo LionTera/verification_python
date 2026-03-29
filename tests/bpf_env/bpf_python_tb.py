@@ -568,6 +568,10 @@ class BpfPythonTB:
         self._loaded_program: list[int] = []
         self._loaded_packet: bytes = b""
 
+    @property
+    def current_cycle(self) -> int:
+        return self._cycle
+
     def init_signals(self) -> None:
         self.dut.bpf_start @= 0
         self.dut.bpf_packet_len @= 0

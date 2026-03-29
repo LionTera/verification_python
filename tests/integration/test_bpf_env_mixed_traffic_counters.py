@@ -14,6 +14,10 @@ from tests.bpf_env.bpf_python_tb import (
     bpf_ret_a,
     bpf_ret_k,
     full_artifacts_enabled,
+    packet_field_map_markdown,
+    packet_memory_map_markdown,
+    packet_report_markdown,
+    program_report_markdown,
     reports_enabled,
 )
 from tests.bpf_env.dut_builders import build_bpf_env, verilator_available, waveform_path_for_test
@@ -80,6 +84,62 @@ def make_tcp_dst_filter(protocol_offset: int, dst_port_low_offset: int, *, accep
         bpf_ret_k(0),
         bpf_ret_k(1),
     ]
+
+
+def append_mixed_traffic_report(
+    report_path: Path,
+    *,
+    traffic_history: list[dict[str, object]],
+    program: list[int],
+    protocol_offset: int,
+    dst_port_low_offset: int,
+) -> None:
+    lines = [
+        "",
+        "## Traffic Sequence",
+        "",
+        f"- Protocol offset used by filter: `{protocol_offset}`",
+        f"- Destination-port low-byte offset used by filter: `{dst_port_low_offset}`",
+        "",
+        "### Sequence Summary",
+        "",
+        "| Item | Name | Expected Accept | Actual Accept | Loss Cycles | Accept Counter | Reject Counter | Loss Counter |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for index, item in enumerate(traffic_history):
+        lines.append(
+            f"| `{index}` | `{item['name']}` | `{item['expected_accept']}` | `{item['actual_accept']}` | "
+            f"`{item['loss_cycles']}` | `{item['accept_count']}` | `{item['reject_count']}` | `{item['loss_count']}` |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Filter Program Used For Traffic Items",
+            "",
+            program_report_markdown(program),
+        ]
+    )
+
+    for index, item in enumerate(traffic_history):
+        packet = item["packet"]
+        lines.extend(
+            [
+                f"## Traffic Item {index}: {item['name']}",
+                "",
+                f"- Expected Accept: `{item['expected_accept']}`",
+                f"- Actual Accept: `{item['actual_accept']}`",
+                f"- Loss Cycles Injected: `{item['loss_cycles']}`",
+                f"- Counters After Item: accept=`{item['accept_count']}` reject=`{item['reject_count']}` loss=`{item['loss_count']}`",
+                "",
+                packet_report_markdown(packet),
+                packet_field_map_markdown(packet),
+                packet_memory_map_markdown(packet),
+            ]
+        )
+
+    with report_path.open("a", encoding="utf-8") as report_file:
+        report_file.write("\n".join(lines))
 
 
 @pytest.mark.integration
@@ -149,6 +209,7 @@ def test_bpf_env_mixed_traffic_counters():
     accept_expected = 0
     reject_expected = 0
     loss_expected = 0
+    traffic_history: list[dict[str, object]] = []
 
     for index, (name, packet, loss_cycles, expected_accept) in enumerate(traffic):
         print(f"Traffic item {index}: {name} loss_cycles={loss_cycles} expected_accept={expected_accept}")
@@ -188,6 +249,18 @@ def test_bpf_env_mixed_traffic_counters():
         assert accept_now == accept_expected
         assert reject_now == reject_expected
         assert loss_now == loss_expected
+        traffic_history.append(
+            {
+                "name": name,
+                "packet": packet,
+                "loss_cycles": loss_cycles,
+                "expected_accept": expected_accept,
+                "actual_accept": result.accepted,
+                "accept_count": accept_now,
+                "reject_count": reject_now,
+                "loss_count": loss_now,
+            }
+        )
 
         for _ in range(8):
             if not int(tb.dut.bpf_return) and not int(tb.dut.bpf_active):
@@ -197,3 +270,10 @@ def test_bpf_env_mixed_traffic_counters():
     if reports_enabled():
         assert tb.trace_path.exists()
         assert tb.report_path.exists()
+        append_mixed_traffic_report(
+            tb.report_path,
+            traffic_history=traffic_history,
+            program=program,
+            protocol_offset=protocol_offset,
+            dst_port_low_offset=dst_port_low_offset,
+        )
