@@ -151,7 +151,16 @@ def waveform_path_for_test(test_name: str, *, probe: bool = False) -> Path | Non
 
 
 def _cleanup_pymtl_artifacts() -> None:
-    for pattern in ("BpfEnv*_pickled.v", "BpfEnv*_pickled.v.tmp", "obj_dir_BpfEnv*"):
+    for pattern in (
+        "BpfEnv*_pickled.v",
+        "BpfEnv*_pickled.v.tmp",
+        "BpfEnv*_v.py",
+        "BpfEnv*_v.cpp",
+        "BpfEnv*_v__ALL_pickled.cpp",
+        "libBpfEnv*_v.so",
+        "pymtl_import_config_BpfEnv*.json",
+        "obj_dir_BpfEnv*",
+    ):
         for path in Path(".").glob(pattern):
             if path.is_dir():
                 shutil.rmtree(path, ignore_errors=True)
