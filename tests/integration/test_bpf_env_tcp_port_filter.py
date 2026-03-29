@@ -10,6 +10,7 @@ from tests.bpf_env.bpf_python_tb import (
     bpf_ldb_abs,
     bpf_ret_a,
     bpf_ret_k,
+    reports_enabled,
 )
 from tests.bpf_env.dut_builders import build_bpf_env, verilator_available, waveform_path_for_test
 from tests.bpf_env.packets import make_tcp_packet, make_udp_packet
@@ -133,7 +134,8 @@ def test_bpf_env_tcp_port_filter_accepts_tcp_port_80():
     assert result.returned
     assert result.accepted
     assert result.ret_value == 1
-    assert result.report_path.exists()
+    if reports_enabled():
+        assert result.report_path.exists()
 
 
 @pytest.mark.integration
@@ -153,7 +155,8 @@ def test_bpf_env_tcp_port_filter_rejects_tcp_port_443():
     assert result.returned
     assert not result.accepted
     assert result.ret_value == 0
-    assert result.report_path.exists()
+    if reports_enabled():
+        assert result.report_path.exists()
 
 
 @pytest.mark.integration
@@ -173,4 +176,5 @@ def test_bpf_env_tcp_port_filter_rejects_udp_port_80():
     assert result.returned
     assert not result.accepted
     assert result.ret_value == 0
-    assert result.report_path.exists()
+    if reports_enabled():
+        assert result.report_path.exists()

@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import ipaddress
 import logging
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -65,6 +66,7 @@ BPF_A = 0x10
 
 RET_K_OPCODE = 0x06
 RET_A_OPCODE = 0x16
+REPORTS_ENV_VAR = "BPF_REPORTS"
 
 
 def encode_bpf_instruction(code: int, *, jt: int = 0, jf: int = 0, k: int = 0) -> int:
@@ -203,6 +205,11 @@ def format_bpf_program(instructions: Iterable[int]) -> str:
             f"    ; {format_bpf_instruction(instruction)}"
         )
     return "\n".join(lines)
+
+
+def reports_enabled() -> bool:
+    value = os.environ.get(REPORTS_ENV_VAR, "")
+    return value.strip().lower() not in {"", "0", "false", "no", "off"}
 
 
 def _format_mac(raw: bytes) -> str:
@@ -669,7 +676,6 @@ class BpfPythonTB:
                 break
             self._tick()
         returned = bool(int(self.dut.bpf_return))
-        self._flush_trace()
         result = BpfRunResult(
             cycles=self._cycle,
             returned=returned,
@@ -678,7 +684,9 @@ class BpfPythonTB:
             trace_path=self.trace_path,
             report_path=self.report_path,
         )
-        self._write_report(result)
+        if reports_enabled():
+            self._flush_trace()
+            self._write_report(result)
         return result
 
     def _write_report(self, result: BpfRunResult) -> None:

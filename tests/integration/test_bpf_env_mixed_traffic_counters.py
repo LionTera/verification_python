@@ -13,6 +13,7 @@ from tests.bpf_env.bpf_python_tb import (
     bpf_ldb_abs,
     bpf_ret_a,
     bpf_ret_k,
+    reports_enabled,
 )
 from tests.bpf_env.dut_builders import build_bpf_env, verilator_available, waveform_path_for_test
 from tests.bpf_env.packets import make_tcp_packet, make_udp_packet
@@ -192,5 +193,6 @@ def test_bpf_env_mixed_traffic_counters():
                 break
             tb.step(1)
 
-    assert tb.trace_path.exists()
-    assert tb.report_path.exists()
+    if reports_enabled():
+        assert tb.trace_path.exists()
+        assert tb.report_path.exists()

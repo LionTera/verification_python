@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.bpf_env.bpf_python_tb import BpfPythonTB, RET_K_OPCODE, encode_bpf_instruction
+from tests.bpf_env.bpf_python_tb import BpfPythonTB, RET_K_OPCODE, encode_bpf_instruction, reports_enabled
 from tests.bpf_env.dut_builders import build_bpf_env, verilator_available, waveform_path_for_test
 
 
@@ -30,5 +30,6 @@ def test_bpf_env_smoke():
     assert result.returned
     assert result.accepted
     assert result.ret_value == 1
-    assert result.trace_path.exists()
-    assert result.report_path.exists()
+    if reports_enabled():
+        assert result.trace_path.exists()
+        assert result.report_path.exists()

@@ -9,6 +9,7 @@ from tests.bpf_env.bpf_python_tb import (
     RET_K_OPCODE,
     encode_bpf_instruction,
     packet_field_map_entries,
+    reports_enabled,
 )
 from tests.bpf_env.dut_builders import build_bpf_env, verilator_available, waveform_path_for_test
 from tests.bpf_env.packets import make_tcp_packet
@@ -63,5 +64,6 @@ def test_bpf_env_packet_memory_map():
     assert result.returned
     assert result.accepted
     assert result.ret_value == 1
-    assert result.trace_path.exists()
-    assert result.report_path.exists()
+    if reports_enabled():
+        assert result.trace_path.exists()
+        assert result.report_path.exists()
