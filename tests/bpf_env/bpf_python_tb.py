@@ -409,6 +409,109 @@ def packet_memory_map_markdown(packet: bytes) -> str:
     return "\n".join(lines)
 
 
+def _field_slice(packet: bytes, start: int, size: int) -> bytes:
+    return packet[start:start + size]
+
+
+def packet_field_map_entries(packet: bytes) -> list[dict[str, str | int]]:
+    entries: list[dict[str, str | int]] = []
+
+    def add_entry(name: str, start: int, size: int, note: str = "") -> None:
+        chunk = _field_slice(packet, start, size)
+        if not chunk:
+            return
+        first_word = start & ~0x3
+        last_word = (start + len(chunk) - 1) & ~0x3
+        if first_word == last_word:
+            pram_words = f"0x{first_word:04x}"
+        else:
+            pram_words = f"0x{first_word:04x}..0x{last_word:04x}"
+        entries.append(
+            {
+                "field": name,
+                "start": start,
+                "end": start + len(chunk) - 1,
+                "raw": chunk.hex(),
+                "pram_words": pram_words,
+                "note": note,
+            }
+        )
+
+    add_entry("eth.dst_mac", 0, 6)
+    add_entry("eth.src_mac", 6, 6)
+    add_entry("eth.eth_type", 12, 2)
+
+    if len(packet) < 34 or packet[12:14] != b"\x08\x00":
+        return entries
+
+    ipv4 = packet[14:]
+    ihl = (ipv4[0] & 0x0F) * 4
+    total_length = int.from_bytes(ipv4[2:4], "big")
+    protocol = ipv4[9]
+
+    add_entry("ipv4.base_header", 14, min(ihl, len(ipv4)), f"ihl={ihl} total_length={total_length}")
+    add_entry("ipv4.version_ihl", 14, 1)
+    add_entry("ipv4.total_length", 16, 2)
+    add_entry("ipv4.protocol", 23, 1)
+    add_entry("ipv4.src_ip", 26, 4)
+    add_entry("ipv4.dst_ip", 30, 4)
+
+    l4_start = 14 + ihl
+    if len(packet) < l4_start + 8:
+        return entries
+
+    if protocol == 6 and len(packet) >= l4_start + 20:
+        data_offset = ((packet[l4_start + 12] >> 4) & 0xF) * 4
+        add_entry("tcp.src_port", l4_start + 0, 2)
+        add_entry("tcp.dst_port", l4_start + 2, 2)
+        add_entry("tcp.seq_num", l4_start + 4, 4)
+        add_entry("tcp.ack_num", l4_start + 8, 4)
+        add_entry("tcp.data_offset_flags", l4_start + 12, 2)
+        add_entry("tcp.window", l4_start + 14, 2)
+        add_entry("tcp.checksum", l4_start + 16, 2)
+        add_entry("tcp.urgent_ptr", l4_start + 18, 2)
+        payload_start = l4_start + data_offset
+        if payload_start < len(packet):
+            add_entry("tcp.payload", payload_start, len(packet) - payload_start)
+    elif protocol == 17 and len(packet) >= l4_start + 8:
+        add_entry("udp.src_port", l4_start + 0, 2)
+        add_entry("udp.dst_port", l4_start + 2, 2)
+        add_entry("udp.length", l4_start + 4, 2)
+        add_entry("udp.checksum", l4_start + 6, 2)
+        payload_start = l4_start + 8
+        if payload_start < len(packet):
+            add_entry("udp.payload", payload_start, len(packet) - payload_start)
+
+    return entries
+
+
+def packet_field_map_text(packet: bytes) -> str:
+    lines = ["Packet field map:"]
+    for entry in packet_field_map_entries(packet):
+        note = f" note={entry['note']}" if entry["note"] else ""
+        lines.append(
+            f"  {entry['field']}: bytes[{entry['start']:02d}:{entry['end']:02d}] "
+            f"raw={entry['raw']} pram={entry['pram_words']}{note}"
+        )
+    return "\n".join(lines)
+
+
+def packet_field_map_markdown(packet: bytes) -> str:
+    lines = [
+        "### Packet Field Map",
+        "",
+        "| Field | Byte Range | Raw Bytes | PRAM Word(s) | Note |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for entry in packet_field_map_entries(packet):
+        lines.append(
+            f"| `{entry['field']}` | `{entry['start']}-{entry['end']}` | "
+            f"`{entry['raw']}` | `{entry['pram_words']}` | `{entry['note']}` |"
+        )
+    lines.append("")
+    return "\n".join(lines)
+
+
 def program_report_markdown(instructions: Iterable[int]) -> str:
     lines = [
         "## BPF Program",
@@ -593,6 +696,7 @@ class BpfPythonTB:
             f"| CSV Trace | `{result.trace_path}` |",
             "",
             packet_report_markdown(self._loaded_packet),
+            packet_field_map_markdown(self._loaded_packet),
             packet_memory_map_markdown(self._loaded_packet),
             program_report_markdown(self._loaded_program),
         ]
@@ -603,6 +707,9 @@ class BpfPythonTB:
 
     def print_packet_memory_map(self, packet: bytes) -> None:
         print(packet_memory_map_text(packet))
+
+    def print_packet_field_map(self, packet: bytes) -> None:
+        print(packet_field_map_text(packet))
 
     def print_program(self) -> None:
         print(format_bpf_program(self._loaded_program))
