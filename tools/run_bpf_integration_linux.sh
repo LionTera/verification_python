@@ -26,3 +26,9 @@ if [[ "${BPF_WAVEFORM:-}" != "" ]]; then
 fi
 
 pytest -s -m integration tests/integration/test_bpf_env_smoke.py tests/integration/test_bpf_env_accept_reject.py tests/integration/test_bpf_env_tcp_port_filter.py tests/integration/test_bpf_env_tcp.py
+
+echo
+echo "Tip: organize generated artifacts with:"
+echo "  python tools/organize_bpf_reports.py"
+echo "Prune older generated artifacts with:"
+echo "  python tools/prune_bpf_reports.py --dry-run"
