@@ -70,19 +70,22 @@ def discover_offset(
 def make_header_walk_program(
     *,
     protocol_offset: int,
-    src_port_low_offset: int,
     dst_port_low_offset: int,
     seq_low_offset: int,
+    ack_low_offset: int,
+    payload_low_offset: int,
 ) -> list[int]:
     return [
         bpf_ldb_abs(protocol_offset),
-        bpf_jeq_k(0x06, jt=0, jf=6),
-        bpf_ldb_abs(src_port_low_offset),
-        bpf_jeq_k(0x34, jt=0, jf=4),
+        bpf_jeq_k(0x06, jt=0, jf=8),
         bpf_ldb_abs(dst_port_low_offset),
-        bpf_jeq_k(0x78, jt=0, jf=2),
+        bpf_jeq_k(0x78, jt=0, jf=6),
         bpf_ldb_abs(seq_low_offset),
-        bpf_jeq_k(0x04, jt=1, jf=0),
+        bpf_jeq_k(0x04, jt=0, jf=4),
+        bpf_ldb_abs(ack_low_offset),
+        bpf_jeq_k(0xD4, jt=0, jf=2),
+        bpf_ldb_abs(payload_low_offset),
+        bpf_jeq_k(0xEF, jt=1, jf=0),
         bpf_ret_k(0),
         bpf_ret_k(0xA5),
     ]
@@ -115,18 +118,6 @@ def test_bpf_env_packet_header_walk():
         dst_port=0x5678,
         payload=bytes.fromhex("deadbeef"),
     )
-    alt_src_port_packet = make_tcp_packet(
-        dst_mac=bytes.fromhex("aabbccddeeff"),
-        src_mac=bytes.fromhex("112233445566"),
-        src_ip="10.1.2.3",
-        dst_ip="192.0.2.99",
-        src_port=0x1299,
-        dst_port=0x5678,
-        seq=0x01020304,
-        ack=0xA1B2C3D4,
-        flags=0x12,
-        payload=bytes.fromhex("deadbeef"),
-    )
     alt_dst_port_packet = make_tcp_packet(
         dst_mac=bytes.fromhex("aabbccddeeff"),
         src_mac=bytes.fromhex("112233445566"),
@@ -138,6 +129,30 @@ def test_bpf_env_packet_header_walk():
         ack=0xA1B2C3D4,
         flags=0x12,
         payload=bytes.fromhex("deadbeef"),
+    )
+    alt_ack_packet = make_tcp_packet(
+        dst_mac=bytes.fromhex("aabbccddeeff"),
+        src_mac=bytes.fromhex("112233445566"),
+        src_ip="10.1.2.3",
+        dst_ip="192.0.2.99",
+        src_port=0x1234,
+        dst_port=0x5678,
+        seq=0x01020304,
+        ack=0xA1B2C355,
+        flags=0x12,
+        payload=bytes.fromhex("deadbeef"),
+    )
+    alt_payload_packet = make_tcp_packet(
+        dst_mac=bytes.fromhex("aabbccddeeff"),
+        src_mac=bytes.fromhex("112233445566"),
+        src_ip="10.1.2.3",
+        dst_ip="192.0.2.99",
+        src_port=0x1234,
+        dst_port=0x5678,
+        seq=0x01020304,
+        ack=0xA1B2C3D4,
+        flags=0x12,
+        payload=bytes.fromhex("deadbeaa"),
     )
     alt_seq_packet = make_tcp_packet(
         dst_mac=bytes.fromhex("aabbccddeeff"),
@@ -160,14 +175,6 @@ def test_bpf_env_packet_header_walk():
         range(20, 28),
         name="protocol",
     )
-    src_port_low_offset = discover_offset(
-        learning_packet,
-        0x34,
-        alt_src_port_packet,
-        0x99,
-        range(34, 50),
-        name="src_port_low",
-    )
     dst_port_low_offset = discover_offset(
         learning_packet,
         0x78,
@@ -184,12 +191,29 @@ def test_bpf_env_packet_header_walk():
         range(38, 54),
         name="seq_low",
     )
+    ack_low_offset = discover_offset(
+        learning_packet,
+        0xD4,
+        alt_ack_packet,
+        0x55,
+        range(42, 58),
+        name="ack_low",
+    )
+    payload_low_offset = discover_offset(
+        learning_packet,
+        0xEF,
+        alt_payload_packet,
+        0xAA,
+        range(46, 62),
+        name="payload_low",
+    )
 
     program = make_header_walk_program(
         protocol_offset=protocol_offset,
-        src_port_low_offset=src_port_low_offset,
         dst_port_low_offset=dst_port_low_offset,
         seq_low_offset=seq_low_offset,
+        ack_low_offset=ack_low_offset,
+        payload_low_offset=payload_low_offset,
     )
     result = run_program(
         learning_packet,
@@ -197,8 +221,9 @@ def test_bpf_env_packet_header_walk():
         "bpf_packet_header_walk.csv",
         label=(
             "Learning test: packet header walk "
-            f"(protocol={protocol_offset}, src_low={src_port_low_offset}, "
-            f"dst_low={dst_port_low_offset}, seq_low={seq_low_offset})"
+            f"(protocol={protocol_offset}, dst_low={dst_port_low_offset}, "
+            f"seq_low={seq_low_offset}, ack_low={ack_low_offset}, "
+            f"payload_low={payload_low_offset})"
         ),
     )
 

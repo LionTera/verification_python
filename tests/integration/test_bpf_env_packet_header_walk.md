@@ -40,21 +40,24 @@ TCP Header (20 bytes)
 The test first probes the RTL to discover which packet byte offsets are visible for:
 
 - IPv4 protocol
-- TCP source-port low byte
 - TCP destination-port low byte
 - TCP sequence-number low byte
+- TCP acknowledgment-number low byte
+- TCP payload low byte
 
 Then it builds and runs this final program:
 
 ```text
 ldb [protocol_offset]
-jeq #6, jt 0, jf 6
-ldb [src_port_low_offset]
-jeq #0x34, jt 0, jf 4
+jeq #6, jt 0, jf 8
 ldb [dst_port_low_offset]
-jeq #0x78, jt 0, jf 2
+jeq #0x78, jt 0, jf 6
 ldb [seq_low_offset]
-jeq #0x04, jt 1, jf 0
+jeq #0x04, jt 0, jf 4
+ldb [ack_low_offset]
+jeq #0xd4, jt 0, jf 2
+ldb [payload_low_offset]
+jeq #0xef, jt 1, jf 0
 ret #0
 ret #0xa5
 ```

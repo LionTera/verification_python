@@ -63,6 +63,14 @@ def test_bpf_env_packet_loss_long_run():
         assert result.returned
         assert result.accepted
         assert result.ret_value == 1
+        accept_count_now = tb.read_mmap(BPF_ACCEPT_COUNTER_ADDR)
+        print(f"Accept counter after iteration {iteration}: 0x{accept_count_now:08x}")
+        assert accept_count_now == iteration + 1
+
+        for _ in range(8):
+            if not int(tb.dut.bpf_return) and not int(tb.dut.bpf_active):
+                break
+            tb.step(1)
 
     accept_count = tb.read_mmap(BPF_ACCEPT_COUNTER_ADDR)
     reject_count = tb.read_mmap(BPF_REJECT_COUNTER_ADDR)

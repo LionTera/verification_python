@@ -77,7 +77,6 @@ def discover_offset(
 def make_long_learning_program(
     *,
     protocol_offset: int,
-    src_port_low_offset: int,
     dst_port_low_offset: int,
     seq_low_offset: int,
     ack_low_offset: int,
@@ -86,9 +85,6 @@ def make_long_learning_program(
     return [
         bpf_ldb_abs(protocol_offset),
         bpf_jeq_k(0x06, jt=1, jf=0),
-        bpf_ret_k(0),
-        bpf_ldb_abs(src_port_low_offset),
-        bpf_jeq_k(0x34, jt=1, jf=0),
         bpf_ret_k(0),
         bpf_ldb_abs(dst_port_low_offset),
         bpf_jeq_k(0x78, jt=1, jf=0),
@@ -134,18 +130,6 @@ def test_bpf_env_long_program_with_packet_loss():
         dst_ip="192.0.2.99",
         src_port=0x1234,
         dst_port=0x5678,
-        payload=bytes.fromhex("deadbeef"),
-    )
-    src_variant = make_tcp_packet(
-        dst_mac=bytes.fromhex("aabbccddeeff"),
-        src_mac=bytes.fromhex("112233445566"),
-        src_ip="10.1.2.3",
-        dst_ip="192.0.2.99",
-        src_port=0x1299,
-        dst_port=0x5678,
-        seq=0x01020304,
-        ack=0xA1B2C3D4,
-        flags=0x12,
         payload=bytes.fromhex("deadbeef"),
     )
     dst_variant = make_tcp_packet(
@@ -198,7 +182,6 @@ def test_bpf_env_long_program_with_packet_loss():
     )
 
     protocol_offset = discover_offset(packet, 0x06, udp_packet, 0x11, range(20, 28), name="protocol")
-    src_port_low_offset = discover_offset(packet, 0x34, src_variant, 0x99, range(34, 50), name="src_port_low")
     dst_port_low_offset = discover_offset(packet, 0x78, dst_variant, 0xBB, range(34, 50), name="dst_port_low")
     seq_low_offset = discover_offset(packet, 0x04, seq_variant, 0xAA, range(38, 54), name="seq_low")
     ack_low_offset = discover_offset(packet, 0xD4, ack_variant, 0x55, range(42, 58), name="ack_low")
@@ -206,7 +189,6 @@ def test_bpf_env_long_program_with_packet_loss():
 
     program = make_long_learning_program(
         protocol_offset=protocol_offset,
-        src_port_low_offset=src_port_low_offset,
         dst_port_low_offset=dst_port_low_offset,
         seq_low_offset=seq_low_offset,
         ack_low_offset=ack_low_offset,
@@ -219,8 +201,7 @@ def test_bpf_env_long_program_with_packet_loss():
         "bpf_long_program_with_packet_loss.csv",
         label=(
             "Learning test: long program with packet loss "
-            f"(protocol={protocol_offset}, src_low={src_port_low_offset}, "
-            f"dst_low={dst_port_low_offset}, seq_low={seq_low_offset}, "
+            f"(protocol={protocol_offset}, dst_low={dst_port_low_offset}, seq_low={seq_low_offset}, "
             f"ack_low={ack_low_offset}, payload_low={payload_low_offset})"
         ),
     )

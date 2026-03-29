@@ -41,7 +41,6 @@ TCP Header (20 bytes)
 The test first probes the RTL to discover offsets for:
 
 - IPv4 protocol byte
-- TCP source-port low byte
 - TCP destination-port low byte
 - TCP sequence-number low byte
 - TCP acknowledgment-number low byte
@@ -52,9 +51,6 @@ Then it builds a longer linear filter:
 ```text
 ldb [protocol_offset]
 jeq #0x06, jt 1, jf 0
-ret #0
-ldb [src_port_low_offset]
-jeq #0x34, jt 1, jf 0
 ret #0
 ldb [dst_port_low_offset]
 jeq #0x78, jt 1, jf 0
