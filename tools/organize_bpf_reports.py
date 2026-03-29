@@ -32,7 +32,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--pattern",
-        default="bpf_*",
+        default="*",
         help="Glob pattern for generated files to organize from the reports root",
     )
     args = parser.parse_args()
@@ -53,6 +53,8 @@ def main() -> int:
 
     for path in sorted(reports_dir.glob(args.pattern)):
         if not path.is_file():
+            continue
+        if path.parent.name == "organized":
             continue
         category = classify(path)
         dest = destinations[category] / path.name

@@ -13,6 +13,7 @@ from tests.bpf_env.bpf_python_tb import (
     bpf_ldb_abs,
     bpf_ret_a,
     bpf_ret_k,
+    full_artifacts_enabled,
     reports_enabled,
 )
 from tests.bpf_env.dut_builders import build_bpf_env, verilator_available, waveform_path_for_test
@@ -20,8 +21,8 @@ from tests.bpf_env.packets import make_tcp_packet, make_udp_packet
 
 
 def _probe_program(packet: bytes, program: list[int], trace_name: str, *, label: str):
-    dut = build_bpf_env(waveform=waveform_path_for_test(Path(trace_name).stem))
-    tb = BpfPythonTB(dut, trace_path=Path("reports") / trace_name)
+    dut = build_bpf_env(waveform=waveform_path_for_test(Path(trace_name).stem, probe=True))
+    tb = BpfPythonTB(dut, trace_path=Path("reports") / trace_name, emit_reports=full_artifacts_enabled())
     tb.init_signals()
     print(label)
     tb.print_packet_summary(packet)

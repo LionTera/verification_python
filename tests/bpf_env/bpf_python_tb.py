@@ -67,6 +67,7 @@ BPF_A = 0x10
 RET_K_OPCODE = 0x06
 RET_A_OPCODE = 0x16
 REPORTS_ENV_VAR = "BPF_REPORTS"
+FULL_ARTIFACTS_ENV_VAR = "BPF_FULL_ARTIFACTS"
 
 
 def encode_bpf_instruction(code: int, *, jt: int = 0, jf: int = 0, k: int = 0) -> int:
@@ -209,6 +210,11 @@ def format_bpf_program(instructions: Iterable[int]) -> str:
 
 def reports_enabled() -> bool:
     value = os.environ.get(REPORTS_ENV_VAR, "")
+    return value.strip().lower() not in {"", "0", "false", "no", "off"}
+
+
+def full_artifacts_enabled() -> bool:
+    value = os.environ.get(FULL_ARTIFACTS_ENV_VAR, "")
     return value.strip().lower() not in {"", "0", "false", "no", "off"}
 
 
@@ -545,11 +551,18 @@ class BpfRunResult:
 
 
 class BpfPythonTB:
-    def __init__(self, dut, trace_path: str | Path = "reports/bpf_trace.csv"):
+    def __init__(
+        self,
+        dut,
+        trace_path: str | Path = "reports/bpf_trace.csv",
+        *,
+        emit_reports: bool | None = None,
+    ):
         self.dut = dut
         self.trace_path = Path(trace_path)
         self.trace_path.parent.mkdir(parents=True, exist_ok=True)
         self.report_path = self.trace_path.with_suffix(".md")
+        self.emit_reports = reports_enabled() if emit_reports is None else emit_reports
         self._cycle = 0
         self._trace_rows: list[dict[str, int]] = []
         self._loaded_program: list[int] = []
@@ -684,7 +697,7 @@ class BpfPythonTB:
             trace_path=self.trace_path,
             report_path=self.report_path,
         )
-        if reports_enabled():
+        if self.emit_reports:
             self._flush_trace()
             self._write_report(result)
         return result

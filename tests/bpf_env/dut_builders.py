@@ -30,6 +30,7 @@ REPO_PATH_MARKERS = (
     "verilator",
 )
 WAVEFORM_ENV_VAR = "BPF_WAVEFORM"
+FULL_ARTIFACTS_ENV_VAR = "BPF_FULL_ARTIFACTS"
 
 
 class PatchedVerilogImportPass(VerilogVerilatorImportPass):
@@ -133,8 +134,15 @@ def waveform_enabled() -> bool:
     return value.strip().lower() not in {"", "0", "false", "no", "off"}
 
 
-def waveform_path_for_test(test_name: str) -> Path | None:
+def full_artifacts_enabled() -> bool:
+    value = os.environ.get(FULL_ARTIFACTS_ENV_VAR, "")
+    return value.strip().lower() not in {"", "0", "false", "no", "off"}
+
+
+def waveform_path_for_test(test_name: str, *, probe: bool = False) -> Path | None:
     if not waveform_enabled():
+        return None
+    if probe and not full_artifacts_enabled():
         return None
     safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", test_name).strip("._")
     if not safe_name:
