@@ -141,6 +141,12 @@ Also inspect:
 - `reports/bpf_random_traffic_5000_loss.md`
 - `reports/bpf_random_traffic_5000_loss.csv`
 
+Verify the loss timing against the CSV trace:
+
+```bash
+python tools/verify_bpf_loss_schedule.py --report reports/bpf_random_traffic_5000_loss.md --csv reports/bpf_random_traffic_5000_loss.csv
+```
+
 ## Recommended Signals
 
 Top-level behavior:
