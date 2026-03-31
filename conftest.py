@@ -47,6 +47,24 @@ def pytest_addoption(parser):
         default=None,
         help="Override progress print interval for configurable BPF traffic stress tests.",
     )
+    group.addoption(
+        "--bpf-unique-packets",
+        action="store",
+        default=None,
+        help="Override the number of unique packets generated for configurable BPF traffic tests.",
+    )
+    group.addoption(
+        "--bpf-protocol-mode",
+        action="store",
+        default=None,
+        help="Protocol mode for configurable BPF traffic tests: 1=TCP, 2=UDP, 3=TCP+UDP, 4=TCP+UDP+IP.",
+    )
+    group.addoption(
+        "--bpf-error-level",
+        action="store",
+        default=None,
+        help="Error level for configurable BPF traffic tests: 1=packet loss, 2=CRC errors and packet loss.",
+    )
 
 
 def pytest_configure(config):
@@ -58,6 +76,9 @@ def pytest_configure(config):
         ("--bpf-packet-loss-percent", "BPF_PACKET_LOSS_PERCENT", None),
         ("--bpf-packet-rng-seed", "BPF_PACKET_RNG_SEED", None),
         ("--bpf-progress-interval", "BPF_PACKET_PROGRESS_INTERVAL", None),
+        ("--bpf-unique-packets", "BPF_UNIQUE_PACKETS", None),
+        ("--bpf-protocol-mode", "BPF_PROTOCOL_MODE", None),
+        ("--bpf-error-level", "BPF_ERROR_LEVEL", None),
     )
     for option_name, env_name, forced_value in mappings:
         option_value = config.getoption(option_name)
