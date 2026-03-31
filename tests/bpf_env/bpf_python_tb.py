@@ -668,6 +668,10 @@ class BpfPythonTB:
     def current_cycle(self) -> int:
         return self._cycle
 
+    @property
+    def trace_rows(self) -> list[dict[str, int | str]]:
+        return list(self._trace_rows)
+
     def init_signals(self) -> None:
         self.dut.bpf_start @= 0
         self.dut.bpf_packet_len @= 0

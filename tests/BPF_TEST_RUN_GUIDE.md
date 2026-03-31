@@ -184,6 +184,31 @@ What it does:
 - injects packet loss across multiple iterations
 - checks final counter totals
 
+### `test_bpf_env_packet_loss_golden_model.py`
+
+Run:
+
+```bash
+python -m pytest tests/integration/test_bpf_env_packet_loss_golden_model.py -s \
+  --bpf-reports \
+  --bpf-waveform \
+  --bpf-unique-packets 40 \
+  --bpf-protocol-mode 3 \
+  --bpf-packet-rng-seed 0x1234
+```
+
+What it does:
+
+- creates a deterministic golden model of packet-loss events before running the DUT
+- mixes realistic loss reasons:
+  - bad CRC
+  - wrong destination MAC
+  - random injected loss pulse
+- records the expected loss cycles and expected counter progression
+- runs the DUT and extracts the actual `bpf_packet_loss` cycles from the trace
+- compares expected loss cycles against actual waveform-visible loss cycles
+- appends a report table you can use to cross-check the waveform
+
 ### `test_bpf_env_long_program_with_packet_loss.py`
 
 Run:
