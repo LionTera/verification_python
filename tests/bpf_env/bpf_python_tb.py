@@ -756,6 +756,11 @@ class BpfPythonTB:
 
     def load_packet(self, packet: bytes, base_addr: int = 0) -> None:
         self._loaded_packet = packet
+        print(
+            "DP packet load: "
+            f"base_addr=0x{base_addr:04x} len={len(packet)} bytes={packet.hex()}"
+        )
+        print(analyze_packet(packet))
         self.dut.bpf_packet_len @= len(packet)
         for offset in range(0, len(packet), 4):
             chunk = packet[offset:offset + 4].ljust(4, b"\x00")
