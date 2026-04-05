@@ -18,6 +18,7 @@ from pymtl3.passes.backends.verilog.import_.VerilogVerilatorImportConfigs import
 from pymtl3.passes.backends.verilog.translation.VerilogTranslationPass import VerilogTranslationPass
 
 from pymtl.wrappers.bpf_env_wrapper import BpfEnv
+from tests.bpf_env.artifacts import unique_artifact_base
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -149,8 +150,8 @@ def waveform_path_for_test(test_name: str, *, probe: bool = False) -> Path | Non
     if not safe_name:
         safe_name = "bpf_waveform"
     if probe and not full_artifacts_enabled():
-        return Path(tempfile.gettempdir()) / "vp_probe_waveforms" / safe_name
-    return REPO_ROOT / "reports" / f"{safe_name}"
+        return unique_artifact_base(Path(tempfile.gettempdir()) / "vp_probe_waveforms" / safe_name)
+    return unique_artifact_base(REPO_ROOT / "reports" / f"{safe_name}")
 
 
 def _cleanup_pymtl_artifacts() -> None:

@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+from tests.bpf_env.artifacts import unique_artifact_path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -655,7 +656,7 @@ class BpfPythonTB:
         emit_reports: bool | None = None,
     ):
         self.dut = dut
-        self.trace_path = Path(trace_path)
+        self.trace_path = unique_artifact_path(trace_path)
         self.trace_path.parent.mkdir(parents=True, exist_ok=True)
         self.report_path = self.trace_path.with_suffix(".md")
         self.emit_reports = reports_enabled() if emit_reports is None else emit_reports

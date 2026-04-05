@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 
 
 def pytest_addoption(parser):
@@ -65,6 +66,12 @@ def pytest_addoption(parser):
         default=None,
         help="Error level for configurable BPF traffic tests: 1=packet loss, 2=CRC errors and packet loss.",
     )
+    group.addoption(
+        "--bpf-run-id",
+        action="store",
+        default=None,
+        help="Optional artifact run ID suffix. If omitted, a timestamp-based run ID is generated per pytest run.",
+    )
 
 
 def pytest_configure(config):
@@ -79,9 +86,12 @@ def pytest_configure(config):
         ("--bpf-unique-packets", "BPF_UNIQUE_PACKETS", None),
         ("--bpf-protocol-mode", "BPF_PROTOCOL_MODE", None),
         ("--bpf-error-level", "BPF_ERROR_LEVEL", None),
+        ("--bpf-run-id", "BPF_RUN_ID", None),
     )
     for option_name, env_name, forced_value in mappings:
         option_value = config.getoption(option_name)
         if option_value in (None, False):
             continue
         os.environ[env_name] = forced_value if forced_value is not None else str(option_value)
+    if not os.environ.get("BPF_RUN_ID", "").strip():
+        os.environ["BPF_RUN_ID"] = datetime.now().strftime("%Y%m%d_%H%M%S")
