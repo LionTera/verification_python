@@ -40,5 +40,9 @@ reports/bpf_udp*_*.csv
 reports/bpf_udp*_*.md
 reports/bpf_probe_*.csv
 reports/bpf_probe_*.md
+reports/*.csv
+reports/*.md
+!reports/suggested_bpf_architecture.md
+!reports/wrappers_index.md
 
 bpf_test/
