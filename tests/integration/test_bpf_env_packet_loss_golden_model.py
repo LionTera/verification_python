@@ -15,6 +15,13 @@ from tests.bpf_env.bpf_python_tb import (
     reports_enabled,
 )
 from tests.bpf_env.dut_builders import build_bpf_env, verilator_available, waveform_path_for_test
+from tests.bpf_env.golden_model import (
+    GoldenModelTracker,
+    append_markdown_sections,
+    collect_signal_cycles,
+    event_cycles_comparison_markdown,
+    golden_events_markdown,
+)
 from tests.bpf_env.network_ingress import drive_ingress_frame, read_counters, with_ethernet_fcs
 from tests.bpf_env.packet_generator import EXPECTED_DST_MAC, TrafficConfig, generate_configurable_packet_stream
 
@@ -88,19 +95,16 @@ def build_loss_reason_schedule(config: TrafficConfig) -> list[dict[str, object]]
     return scheduled
 
 
-def collect_loss_cycles(tb: BpfPythonTB) -> list[int]:
-    return [int(row["cycle"]) for row in tb.trace_rows if int(row["bpf_packet_loss"]) == 1]
-
-
 def append_loss_golden_report(
     report_path: Path,
     *,
     config: TrafficConfig,
     traffic_history: list[dict[str, object]],
-    expected_loss_cycles: list[int],
+    golden_model: GoldenModelTracker,
     actual_loss_cycles: list[int],
 ) -> None:
-    lines = [
+    expected_loss_cycles = golden_model.cycles("loss")
+    sections = [
         "",
         "## Packet Loss Golden Model",
         "",
@@ -111,39 +115,38 @@ def append_loss_golden_report(
         f"- Actual loss count: `{len(actual_loss_cycles)}`",
         f"- Loss cycle match: `{expected_loss_cycles == actual_loss_cycles}`",
         "",
-        "## Loss Cycle Comparison",
-        "",
-        "| Event | Expected Cycle | Actual Cycle | Match |",
-        "| --- | --- | --- | --- |",
     ]
-
-    max_len = max(len(expected_loss_cycles), len(actual_loss_cycles))
-    for index in range(max_len):
-        expected_cycle = expected_loss_cycles[index] if index < len(expected_loss_cycles) else "-"
-        actual_cycle = actual_loss_cycles[index] if index < len(actual_loss_cycles) else "-"
-        lines.append(
-            f"| `{index}` | `{expected_cycle}` | `{actual_cycle}` | `{expected_cycle == actual_cycle}` |"
+    sections.append(
+        event_cycles_comparison_markdown(
+            title="Loss Cycle Comparison",
+            expected_cycles=expected_loss_cycles,
+            actual_cycles=actual_loss_cycles,
         )
-
-    lines.extend(
+    )
+    sections.append(
+        golden_events_markdown(
+            title="Golden Loss Events",
+            events=[event for event in golden_model.events if event.event_type == "loss"],
+        )
+    )
+    sections.append(
+        "\n".join(
         [
-            "",
-            "## Golden Loss Events",
-            "",
             "| Packet Index | Name | Protocol | Loss Reason | Entered BPF | Loss Assert Cycle | Loss Release Cycle | Expected Loss Counter | Actual Loss Counter | Start Cycle | Return Cycle |",
             "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
         ]
+        )
     )
     for item in traffic_history:
         if item["loss_reason"] == "none":
             continue
-        lines.append(
+        sections.append(
             f"| `{item['index']}` | `{item['name']}` | `{item['protocol']}` | `{item['loss_reason']}` | "
             f"`{item['entered_bpf']}` | `{item['loss_assert_cycle']}` | `{item['loss_release_cycle']}` | "
             f"`{item['expected_loss_count']}` | `{item['actual_loss_count']}` | `{item['start_cycle']}` | `{item['return_cycle']}` |"
         )
 
-    lines.extend(
+    sections.extend(
         [
             "",
             "## Traffic Summary",
@@ -153,14 +156,12 @@ def append_loss_golden_report(
         ]
     )
     for item in traffic_history:
-        lines.append(
+        sections.append(
             f"| `{item['index']}` | `{item['name']}` | `{item['protocol']}` | `{item['loss_reason']}` | "
             f"`{item['entered_bpf']}` | `{item['expected_accept']}` | `{item['actual_accept']}` | "
             f"`{item['accept_count']}` | `{item['reject_count']}` | `{item['actual_loss_count']}` |"
         )
-
-    with report_path.open("a", encoding="utf-8") as report_file:
-        report_file.write("\n".join(lines))
+    append_markdown_sections(report_path, sections)
 
 
 @pytest.mark.integration
@@ -191,7 +192,7 @@ def test_bpf_env_packet_loss_golden_model():
     reject_expected = 0
     loss_expected = 0
     traffic_history: list[dict[str, object]] = []
-    expected_loss_cycles: list[int] = []
+    golden_model = GoldenModelTracker()
 
     for item in traffic:
         metadata = dict(item["metadata"])
@@ -211,12 +212,32 @@ def test_bpf_env_packet_loss_golden_model():
         if not decision.accepted:
             loss_assert_cycle = tb.current_cycle - 2
             loss_release_cycle = tb.current_cycle
-            expected_loss_cycles.append(loss_assert_cycle)
+            golden_model.record(
+                event_type="loss",
+                cycle=loss_assert_cycle,
+                reason=loss_reason,
+                item_index=int(item["index"]),
+                entered_bpf=False,
+                name=str(item["name"]),
+                protocol=str(metadata["protocol"]),
+                start_cycle=start_cycle,
+                end_cycle=loss_release_cycle,
+            )
             loss_expected += 1
         else:
             if bool(item["inject_random_loss"]):
                 loss_assert_cycle = tb.current_cycle
-                expected_loss_cycles.append(loss_assert_cycle)
+                golden_model.record(
+                    event_type="loss",
+                    cycle=loss_assert_cycle,
+                    reason=loss_reason,
+                    item_index=int(item["index"]),
+                    entered_bpf=True,
+                    name=str(item["name"]),
+                    protocol=str(metadata["protocol"]),
+                    start_cycle=tb.current_cycle,
+                    end_cycle=None,
+                )
                 tb.set_packet_loss(1)
                 tb.step(1)
                 tb.set_packet_loss(0)
@@ -266,15 +287,15 @@ def test_bpf_env_packet_loss_golden_model():
                 break
             tb.step(1)
 
-    actual_loss_cycles = collect_loss_cycles(tb)
-    assert actual_loss_cycles == expected_loss_cycles
+    actual_loss_cycles = collect_signal_cycles(tb.trace_rows, "bpf_packet_loss")
+    golden_model.compare_cycles(actual_loss_cycles, "loss")
 
     accept_count = tb.read_mmap(BPF_ACCEPT_COUNTER_ADDR)
     reject_count = tb.read_mmap(BPF_REJECT_COUNTER_ADDR)
     packet_loss_count = tb.read_mmap(BPF_PACKET_LOSS_COUNTER_ADDR)
     assert accept_count == accept_expected
     assert reject_count == reject_expected
-    assert packet_loss_count == len(expected_loss_cycles)
+    assert packet_loss_count == golden_model.count("loss")
 
     if reports_enabled():
         assert tb.trace_path.exists()
@@ -283,6 +304,6 @@ def test_bpf_env_packet_loss_golden_model():
             tb.report_path,
             config=config,
             traffic_history=traffic_history,
-            expected_loss_cycles=expected_loss_cycles,
+            golden_model=golden_model,
             actual_loss_cycles=actual_loss_cycles,
         )
