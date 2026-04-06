@@ -1,3 +1,5 @@
+"""Remove old generated BPF report artifacts from the reports directory."""
+
 from __future__ import annotations
 
 import argparse

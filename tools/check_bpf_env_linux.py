@@ -1,3 +1,5 @@
+"""Quick environment check for Linux-based BPF verification runs."""
+
 from __future__ import annotations
 
 import shutil

@@ -1,3 +1,5 @@
+"""PySide6 UI for configuring, running, and browsing BPF verification flows."""
+
 from __future__ import annotations
 
 import sys
@@ -158,45 +160,57 @@ class BpfVerificationWindow(QMainWindow):
         self.test_combo = QComboBox()
         self.test_combo.addItems(TEST_OPTIONS.keys())
         self.test_combo.currentTextChanged.connect(self._on_test_changed)
+        self.test_combo.setToolTip("Select which verification scenario to run.")
         self._add_form_row(layout, "test", "Test", self.test_combo)
 
         self.packet_count_spin = QSpinBox()
         self.packet_count_spin.setRange(1, 100000)
         self.packet_count_spin.setValue(1000)
         self.packet_count_spin.valueChanged.connect(self._update_command_preview)
+        self.packet_count_spin.setToolTip("Total number of packet events to run in long random-traffic tests.")
         self._add_form_row(layout, "packet_count", "Packet Count", self.packet_count_spin)
 
         self.unique_packets_spin = QSpinBox()
         self.unique_packets_spin.setRange(1, 100000)
         self.unique_packets_spin.setValue(40)
         self.unique_packets_spin.valueChanged.connect(self._update_command_preview)
+        self.unique_packets_spin.setToolTip(
+            "Number of distinct generated packets in configurable/golden-model flows."
+        )
         self._add_form_row(layout, "unique_packets", "Unique Packets", self.unique_packets_spin)
 
         self.loss_percent_spin = QSpinBox()
         self.loss_percent_spin.setRange(0, 100)
         self.loss_percent_spin.setValue(10)
         self.loss_percent_spin.valueChanged.connect(self._update_command_preview)
+        self.loss_percent_spin.setToolTip("Percentage of packets selected for packet-loss injection.")
         self._add_form_row(layout, "loss_percent", "Loss Percent", self.loss_percent_spin)
 
         self.protocol_combo = QComboBox()
         self.protocol_combo.addItems(PROTOCOL_MODE_OPTIONS.keys())
         self.protocol_combo.setCurrentText("TCP + UDP")
         self.protocol_combo.currentTextChanged.connect(self._update_command_preview)
+        self.protocol_combo.setToolTip("Choose which protocol mix the packet generator should create.")
         self._add_form_row(layout, "protocol_mode", "Protocols", self.protocol_combo)
 
         self.error_level_combo = QComboBox()
         self.error_level_combo.addItems(ERROR_LEVEL_OPTIONS.keys())
         self.error_level_combo.setCurrentText("CRC Errors + Packet Loss")
         self.error_level_combo.currentTextChanged.connect(self._update_command_preview)
+        self.error_level_combo.setToolTip("Select whether to inject only loss pulses or also ingress-style CRC errors.")
         self._add_form_row(layout, "error_level", "Error Level", self.error_level_combo)
 
         self.seed_edit = QLineEdit("0x1234")
         self.seed_edit.textChanged.connect(self._update_command_preview)
+        self.seed_edit.setToolTip(
+            "Deterministic random seed for packet generation and loss scheduling. Same seed + same params => same scenario."
+        )
         self._add_form_row(layout, "seed", "Seed", self.seed_edit)
 
         self.run_id_edit = QLineEdit("")
         self.run_id_edit.setPlaceholderText("Optional run label")
         self.run_id_edit.textChanged.connect(self._update_command_preview)
+        self.run_id_edit.setToolTip("Optional artifact suffix so reports and waveforms are easier to identify later.")
         self._add_form_row(layout, "run_id", "Run ID", self.run_id_edit)
 
         shell_layout.addWidget(group)
@@ -208,16 +222,21 @@ class BpfVerificationWindow(QMainWindow):
         self.reports_check = QCheckBox("Generate Reports")
         self.reports_check.setChecked(True)
         self.reports_check.stateChanged.connect(self._update_command_preview)
+        self.reports_check.setToolTip("Write CSV and Markdown report artifacts into the reports directory.")
         runtime_layout.addWidget(self.reports_check)
 
         self.waveform_check = QCheckBox("Generate Main Waveform")
         self.waveform_check.setChecked(True)
         self.waveform_check.stateChanged.connect(self._update_command_preview)
+        self.waveform_check.setToolTip("Generate the main VCD waveform for this run.")
         runtime_layout.addWidget(self.waveform_check)
 
         self.full_artifacts_check = QCheckBox("Keep Probe Artifacts")
         self.full_artifacts_check.setChecked(False)
         self.full_artifacts_check.stateChanged.connect(self._update_command_preview)
+        self.full_artifacts_check.setToolTip(
+            "Keep extra probe waveforms/reports for tests that do offset discovery. Usually not needed for normal runs."
+        )
         runtime_layout.addWidget(self.full_artifacts_check)
 
         shell_layout.addWidget(runtime_group)
@@ -225,12 +244,14 @@ class BpfVerificationWindow(QMainWindow):
         self.run_button = QPushButton("Start")
         self.run_button.setObjectName("startButton")
         self.run_button.clicked.connect(self._run_selected_test)
+        self.run_button.setToolTip("Launch the selected pytest command.")
         shell_layout.addWidget(self.run_button)
 
         self.stop_button = QPushButton("Stop")
         self.stop_button.setObjectName("stopButton")
         self.stop_button.clicked.connect(self._stop_process)
         self.stop_button.setEnabled(False)
+        self.stop_button.setToolTip("Stop the active pytest process.")
         shell_layout.addWidget(self.stop_button)
 
         return shell
@@ -245,11 +266,13 @@ class BpfVerificationWindow(QMainWindow):
         self.generator_limit_spin = QSpinBox()
         self.generator_limit_spin.setRange(1, 100000)
         self.generator_limit_spin.setValue(10)
+        self.generator_limit_spin.setToolTip("How many generated packets to show in the generator preview command.")
         layout.addWidget(QLabel("Show Limit"), 0, 0)
         layout.addWidget(self.generator_limit_spin, 0, 1)
 
         self.generator_button = QPushButton("Preview Generated Packets")
         self.generator_button.clicked.connect(self._show_generator_command)
+        self.generator_button.setToolTip("Show the standalone packet-generator command for the current parameters.")
         layout.addWidget(self.generator_button, 1, 0, 1, 2)
 
         return group
@@ -296,6 +319,7 @@ class BpfVerificationWindow(QMainWindow):
         artifact_actions.addStretch(1)
         self.refresh_reports_button = QPushButton("Refresh Reports")
         self.refresh_reports_button.clicked.connect(self._refresh_reports)
+        self.refresh_reports_button.setToolTip("Refresh the artifact list from the reports directory.")
         artifact_actions.addWidget(self.refresh_reports_button)
         artifacts_layout.addLayout(artifact_actions)
 

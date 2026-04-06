@@ -1,3 +1,5 @@
+"""Probe test that reads packet header bytes directly through BPF loads."""
+
 from __future__ import annotations
 
 from pathlib import Path

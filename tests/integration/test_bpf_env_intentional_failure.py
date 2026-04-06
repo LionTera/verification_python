@@ -1,3 +1,5 @@
+"""Intentional failure test used to validate failure-time artifacts."""
+
 from __future__ import annotations
 
 from pathlib import Path

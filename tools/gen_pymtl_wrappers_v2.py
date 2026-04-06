@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+"""Generate PyMTL wrappers and an index for the BPF RTL tree."""
+
 from __future__ import annotations
 
 import argparse
@@ -45,6 +47,7 @@ SKIP_PORTS = {"clk", "reset"}
 
 @dataclass
 class Port:
+    """Parsed description of one Verilog module port."""
     name: str
     direction: str
     width: int
@@ -52,6 +55,7 @@ class Port:
 
 @dataclass
 class ModuleDef:
+    """Parsed description of one Verilog module and its source file."""
     name: str
     source_file: Path
     parameters: dict[str, int]

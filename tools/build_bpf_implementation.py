@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Build a summarized view of the BPF implementation wrappers and reports."""
+
 import argparse
 import json
 from pathlib import Path

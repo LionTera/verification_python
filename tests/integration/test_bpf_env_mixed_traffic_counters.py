@@ -1,3 +1,5 @@
+"""Mixed traffic test that validates accept, reject, and loss counters."""
+
 from __future__ import annotations
 
 from pathlib import Path

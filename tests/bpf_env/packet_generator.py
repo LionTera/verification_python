@@ -1,3 +1,5 @@
+"""Deterministic packet generation for configurable verification scenarios."""
+
 from __future__ import annotations
 
 import argparse
@@ -24,6 +26,7 @@ PACKET_GENERATOR_PROTOCOLS = {
 
 @dataclass(frozen=True)
 class PacketSpec:
+    """Declarative description of one generated packet."""
     l4: str = "tcp"
     src_mac: bytes = b"\x02\x00\x00\x00\x00\x01"
     dst_mac: bytes = b"\x02\x00\x00\x00\x00\x02"
@@ -41,6 +44,7 @@ class PacketSpec:
 
 @dataclass(frozen=True)
 class TrafficConfig:
+    """Configuration for configurable packet generation flows."""
     unique_packets: int = DEFAULT_UNIQUE_PACKETS
     protocol_mode: int = DEFAULT_PROTOCOL_MODE
     error_level: int = DEFAULT_ERROR_LEVEL
@@ -48,6 +52,7 @@ class TrafficConfig:
 
 
 def build_packet(spec: PacketSpec) -> bytes:
+    """Materialize a PacketSpec into raw frame bytes."""
     if spec.l4 == "tcp":
         return make_tcp_packet(
             src_mac=spec.src_mac,
@@ -84,10 +89,12 @@ def build_packet(spec: PacketSpec) -> bytes:
 
 
 def derive_packet(base: PacketSpec, **changes) -> PacketSpec:
+    """Create a modified copy of an existing packet specification."""
     return replace(base, **changes)
 
 
 def packet_stream(specs: Iterable[PacketSpec]) -> list[dict[str, object]]:
+    """Convert packet specifications into the dict structure used by tests."""
     items: list[dict[str, object]] = []
     for index, spec in enumerate(specs):
         items.append(
@@ -111,6 +118,7 @@ def make_ipv4_packet(
     protocol: int = 1,
     payload: bytes = b"",
 ) -> bytes:
+    """Build a minimal Ethernet + IPv4 packet with no L4 header."""
     from tests.bpf_env.packets import _checksum
     import ipaddress
 
@@ -149,6 +157,7 @@ def random_packet_stream(
     accepted_dst_port: int = 0x5678,
     rejected_dst_port: int = 0x56BB,
 ) -> list[dict[str, object]]:
+    """Generate deterministic mixed random traffic for stress-style tests."""
     if count <= 0:
         raise ValueError("count must be > 0")
     if tcp_accept_ratio < 0 or tcp_reject_ratio < 0 or tcp_accept_ratio + tcp_reject_ratio > 1:
@@ -202,6 +211,7 @@ def random_packet_stream(
 
 
 def validate_traffic_config(config: TrafficConfig) -> TrafficConfig:
+    """Validate configurable traffic settings before generation."""
     if config.unique_packets <= 0:
         raise ValueError("unique_packets must be > 0")
     if config.protocol_mode not in PACKET_GENERATOR_PROTOCOLS:
@@ -212,6 +222,7 @@ def validate_traffic_config(config: TrafficConfig) -> TrafficConfig:
 
 
 def _build_configurable_packet_spec(index: int, protocol: str) -> PacketSpec:
+    """Build one deterministic packet template for a configurable run."""
     base = PacketSpec(
         l4=protocol,
         src_mac=bytes.fromhex("020000000001"),
@@ -241,6 +252,7 @@ def _build_configurable_packet_spec(index: int, protocol: str) -> PacketSpec:
 
 
 def generate_configurable_packet_stream(config: TrafficConfig) -> list[dict[str, object]]:
+    """Generate packet items and ingress metadata for configurable tests."""
     config = validate_traffic_config(config)
     rng = random.Random(config.seed)
     protocols = PACKET_GENERATOR_PROTOCOLS[config.protocol_mode]
@@ -291,6 +303,7 @@ def generate_configurable_packet_stream(config: TrafficConfig) -> list[dict[str,
 
 
 def describe_generated_item(item: dict[str, object]) -> str:
+    """Render one generated packet item as human-readable text."""
     metadata = dict(item["metadata"])
     lines = [
         (
@@ -305,6 +318,7 @@ def describe_generated_item(item: dict[str, object]) -> str:
 
 
 def _parse_args() -> argparse.Namespace:
+    """Parse CLI arguments for standalone packet generation."""
     parser = argparse.ArgumentParser(description="Generate configurable BPF traffic and print the resulting frames.")
     parser.add_argument("--unique-packets", type=lambda value: int(value, 0), default=DEFAULT_UNIQUE_PACKETS)
     parser.add_argument("--protocol-mode", type=lambda value: int(value, 0), default=DEFAULT_PROTOCOL_MODE)
@@ -315,6 +329,7 @@ def _parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """CLI entry point for previewing generated packets."""
     args = _parse_args()
     config = validate_traffic_config(
         TrafficConfig(

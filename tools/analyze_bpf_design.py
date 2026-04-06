@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Generate a lightweight structural summary of the BPF RTL design."""
+
 import argparse
 import re
 from pathlib import Path

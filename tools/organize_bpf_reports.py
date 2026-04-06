@@ -1,3 +1,5 @@
+"""Organize generated BPF report artifacts into subfolders."""
+
 from __future__ import annotations
 
 import argparse

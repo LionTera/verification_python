@@ -1,3 +1,5 @@
+"""Parameterized configurable-traffic test driven by CLI or environment settings."""
+
 from __future__ import annotations
 
 import os
@@ -41,6 +43,7 @@ DEFAULT_RNG_SEED = 0x5EED5EED
 
 
 def _get_positive_int_env(name: str, default: int) -> int:
+    """Read a positive integer override from the environment."""
     raw = os.environ.get(name, "").strip()
     if not raw:
         return default
@@ -51,6 +54,7 @@ def _get_positive_int_env(name: str, default: int) -> int:
 
 
 def load_config() -> TrafficConfig:
+    """Load configurable-traffic settings from the environment."""
     return TrafficConfig(
         unique_packets=_get_positive_int_env(UNIQUE_PACKETS_ENV_VAR, DEFAULT_UNIQUE_PACKETS),
         protocol_mode=_get_positive_int_env(PROTOCOL_MODE_ENV_VAR, DEFAULT_PROTOCOL_MODE),
@@ -60,6 +64,7 @@ def load_config() -> TrafficConfig:
 
 
 def _probe_program(packet: bytes, program: list[int], trace_name: str, *, label: str):
+    """Run a short probe program on one packet to discover field offsets."""
     dut = build_bpf_env(waveform=waveform_path_for_test(Path(trace_name).stem, probe=True))
     tb = BpfPythonTB(dut, trace_path=Path("reports") / trace_name, emit_reports=full_artifacts_enabled())
     tb.init_signals()
@@ -84,6 +89,7 @@ def discover_offset(
     *,
     name: str,
 ) -> int:
+    """Search for the packet byte offset that yields the expected field values."""
     print(f"Probing {name} offsets")
     for offset in candidate_offsets:
         program = [bpf_ldb_abs(offset), bpf_ret_a()]
@@ -111,6 +117,7 @@ def discover_offset(
 
 
 def make_tcp_dst_filter(protocol_offset: int, dst_port_low_offset: int, *, accepted_low_byte: int) -> list[int]:
+    """Build the filter used by the configurable-traffic test."""
     return [
         bpf_ldb_abs(protocol_offset),
         bpf_jeq_k(0x06, jt=0, jf=2),
@@ -130,6 +137,7 @@ def append_configurable_report(
     dst_port_low_offset: int,
     program: list[int],
 ) -> None:
+    """Append configurable-traffic summary sections to the main report."""
     lines = [
         "",
         "## Configurable Traffic Run",
@@ -162,6 +170,7 @@ def append_configurable_report(
 @pytest.mark.integration
 @pytest.mark.slow
 def test_bpf_env_configurable_traffic():
+    """Run the configurable traffic scenario and check its expected behavior."""
     if not verilator_available():
         pytest.skip("verilator is not installed")
 

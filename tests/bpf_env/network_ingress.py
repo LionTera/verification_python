@@ -1,3 +1,5 @@
+"""Software ingress checks used by ingress-oriented verification tests."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -16,14 +18,17 @@ BROADCAST_MAC = b"\xff\xff\xff\xff\xff\xff"
 
 
 def ethernet_fcs(payload: bytes) -> bytes:
+    """Return the Ethernet FCS for the provided payload."""
     return (zlib.crc32(payload) & 0xFFFFFFFF).to_bytes(4, "little")
 
 
 def with_ethernet_fcs(frame_without_fcs: bytes) -> bytes:
+    """Append a valid FCS to a frame."""
     return frame_without_fcs + ethernet_fcs(frame_without_fcs)
 
 
 def mutate_ethertype(frame_without_fcs: bytes, ethertype: int) -> bytes:
+    """Return a copy of a frame with a replaced ethertype field."""
     updated = bytearray(frame_without_fcs)
     updated[12:14] = ethertype.to_bytes(2, "big")
     return bytes(updated)
@@ -31,6 +36,7 @@ def mutate_ethertype(frame_without_fcs: bytes, ethertype: int) -> bytes:
 
 @dataclass(frozen=True)
 class IngressDecision:
+    """Result of software ingress evaluation for one frame."""
     accepted: bool
     reason: str
     packet_for_bpf: bytes | None
@@ -43,6 +49,7 @@ def evaluate_ingress_frame(
     accept_broadcast: bool = True,
     expected_ethertype: int = ETHERTYPE_IPV4,
 ) -> IngressDecision:
+    """Apply ingress checks before deciding whether BPF should see the frame."""
     if len(frame_with_fcs) < 18:
         return IngressDecision(False, "too_short", None)
 
@@ -70,6 +77,7 @@ def drive_ingress_frame(
     expected_dst_mac: bytes,
     packet_loss_cycles: int = 1,
 ) -> IngressDecision:
+    """Drive a frame through the ingress model and update loss signaling."""
     decision = evaluate_ingress_frame(frame_with_fcs, expected_dst_mac=expected_dst_mac)
     if decision.accepted:
         assert decision.packet_for_bpf is not None
@@ -84,6 +92,7 @@ def drive_ingress_frame(
 
 
 def read_counters(tb: BpfPythonTB) -> tuple[int, int, int]:
+    """Read accept, reject, and packet-loss counters from MMAP."""
     accept_now = tb.read_mmap(BPF_ACCEPT_COUNTER_ADDR)
     reject_now = tb.read_mmap(BPF_REJECT_COUNTER_ADDR)
     loss_now = tb.read_mmap(BPF_PACKET_LOSS_COUNTER_ADDR)

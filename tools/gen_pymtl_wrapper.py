@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Generate a PyMTL wrapper for a selected Verilog RTL module."""
+
 import argparse
 import json
 import re

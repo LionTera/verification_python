@@ -1,3 +1,5 @@
+"""Counter-focused test for direct packet-loss signaling."""
+
 from __future__ import annotations
 
 from pathlib import Path

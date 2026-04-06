@@ -1,3 +1,5 @@
+"""TCP destination-port filter tests with dynamic packet offset discovery."""
+
 from __future__ import annotations
 
 from pathlib import Path

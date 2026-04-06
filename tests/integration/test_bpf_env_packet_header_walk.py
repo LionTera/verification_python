@@ -1,3 +1,5 @@
+"""Header-walk test using a multi-step BPF program over packet fields."""
+
 from __future__ import annotations
 
 from pathlib import Path

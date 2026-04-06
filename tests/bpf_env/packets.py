@@ -1,9 +1,12 @@
+"""Packet construction helpers for the Python verification flow."""
+
 from __future__ import annotations
 
 import ipaddress
 
 
 def _checksum(data: bytes) -> int:
+    """Compute the standard Internet checksum."""
     if len(data) % 2:
         data += b"\x00"
     total = 0
@@ -26,6 +29,7 @@ def make_tcp_packet(
     flags: int = 0x02,
     payload: bytes = b"",
 ) -> bytes:
+    """Build an Ethernet + IPv4 + TCP packet with valid checksums."""
     eth_type = b"\x08\x00"
     version_ihl = 0x45
     dscp_ecn = 0
@@ -84,6 +88,7 @@ def make_udp_packet(
     dst_port: int = 80,
     payload: bytes = b"",
 ) -> bytes:
+    """Build an Ethernet + IPv4 + UDP packet with valid checksums."""
     eth_type = b"\x08\x00"
     version_ihl = 0x45
     dscp_ecn = 0

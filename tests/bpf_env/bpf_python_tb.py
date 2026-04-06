@@ -1,3 +1,13 @@
+"""Shared Python-side testbench for driving and observing the BPF DUT.
+
+This module provides:
+
+- BPF instruction encoding helpers
+- packet decoding and reporting helpers
+- a reusable DUT driver class used by the integration tests
+- CSV and Markdown artifact generation
+"""
+
 from __future__ import annotations
 
 import csv
@@ -72,38 +82,47 @@ FULL_ARTIFACTS_ENV_VAR = "BPF_FULL_ARTIFACTS"
 
 
 def encode_bpf_instruction(code: int, *, jt: int = 0, jf: int = 0, k: int = 0) -> int:
+    """Pack a classic BPF instruction into the DUT's 64-bit instruction format."""
     return ((code & 0xFF) << 48) | ((jt & 0xFF) << 40) | ((jf & 0xFF) << 32) | (k & 0xFFFFFFFF)
 
 
 def bpf_stmt(code: int, k: int = 0) -> int:
+    """Encode a simple BPF statement with no jump targets."""
     return encode_bpf_instruction(code, k=k)
 
 
 def bpf_jump(code: int, k: int, jt: int, jf: int) -> int:
+    """Encode a BPF jump instruction."""
     return encode_bpf_instruction(code, jt=jt, jf=jf, k=k)
 
 
 def bpf_ldb_abs(offset: int) -> int:
+    """Encode `ldb [offset]`."""
     return bpf_stmt(BPF_LD | BPF_B | BPF_ABS, offset)
 
 
 def bpf_ldh_abs(offset: int) -> int:
+    """Encode `ldh [offset]`."""
     return bpf_stmt(BPF_LD | BPF_H | BPF_ABS, offset)
 
 
 def bpf_jeq_k(value: int, *, jt: int, jf: int) -> int:
+    """Encode `jeq #value` with explicit true/false offsets."""
     return bpf_jump(BPF_JMP | BPF_JEQ | BPF_K, value, jt, jf)
 
 
 def bpf_ret_k(value: int) -> int:
+    """Encode `ret #value`."""
     return bpf_stmt(BPF_RET | BPF_K, value)
 
 
 def bpf_ret_a() -> int:
+    """Encode `ret a`."""
     return bpf_stmt(BPF_RET | BPF_A, 0)
 
 
 def decode_bpf_instruction(instruction: int) -> dict[str, int]:
+    """Split a packed 64-bit instruction into its classic BPF fields."""
     return {
         "code": (instruction >> 48) & 0xFF,
         "jt": (instruction >> 40) & 0xFF,
@@ -113,6 +132,7 @@ def decode_bpf_instruction(instruction: int) -> dict[str, int]:
 
 
 def format_bpf_instruction(instruction: int) -> str:
+    """Render one packed instruction in a descriptive debug format."""
     decoded = decode_bpf_instruction(instruction)
     mnemonic = {
         RET_K_OPCODE: "RET_K",
@@ -125,6 +145,7 @@ def format_bpf_instruction(instruction: int) -> str:
 
 
 def format_bpf_instruction_asm(instruction: int) -> str:
+    """Render one packed instruction in assembly-like form."""
     decoded = decode_bpf_instruction(instruction)
     code = decoded["code"]
     klass = code & BPF_CLASS_MASK
@@ -200,6 +221,7 @@ def format_bpf_instruction_asm(instruction: int) -> str:
 
 
 def format_bpf_program(instructions: Iterable[int]) -> str:
+    """Render a whole BPF program for console output."""
     lines = ["BPF program:"]
     for index, instruction in enumerate(instructions):
         lines.append(
@@ -210,20 +232,24 @@ def format_bpf_program(instructions: Iterable[int]) -> str:
 
 
 def reports_enabled() -> bool:
+    """Return True when CSV/Markdown report emission is enabled."""
     value = os.environ.get(REPORTS_ENV_VAR, "")
     return value.strip().lower() not in {"", "0", "false", "no", "off"}
 
 
 def full_artifacts_enabled() -> bool:
+    """Return True when probe/full-artifact retention is enabled."""
     value = os.environ.get(FULL_ARTIFACTS_ENV_VAR, "")
     return value.strip().lower() not in {"", "0", "false", "no", "off"}
 
 
 def _format_mac(raw: bytes) -> str:
+    """Format a MAC address for human-readable output."""
     return ":".join(f"{byte:02x}" for byte in raw)
 
 
 def _format_tcp_flags(flags: int) -> str:
+    """Format a TCP flag byte as a comma-separated name list."""
     names = [
         (0x80, "CWR"),
         (0x40, "ECE"),
@@ -239,6 +265,7 @@ def _format_tcp_flags(flags: int) -> str:
 
 
 def analyze_packet(packet: bytes) -> str:
+    """Decode the packet into a concise human-readable summary."""
     lines = [
         f"Packet length: {len(packet)} bytes",
         f"Packet bytes:  {packet.hex()}",
@@ -301,6 +328,7 @@ def analyze_packet(packet: bytes) -> str:
 
 
 def packet_csv_fields(packet: bytes) -> dict[str, str | int]:
+    """Extract packet fields into one flat CSV-friendly dictionary."""
     fields: dict[str, str | int] = {
         "packet_len": len(packet),
         "packet_raw": packet.hex(),
@@ -397,6 +425,7 @@ def packet_csv_fields(packet: bytes) -> dict[str, str | int]:
 
 
 def packet_report_markdown(packet: bytes) -> str:
+    """Render a Markdown summary of the currently loaded packet."""
     lines = [
         "## Packet",
         "",
@@ -490,6 +519,7 @@ def packet_report_markdown(packet: bytes) -> str:
 
 
 def packet_memory_map_text(packet: bytes) -> str:
+    """Render the packet as 32-bit PRAM words in plain text."""
     lines = ["Packet memory words:"]
     for offset in range(0, len(packet), 4):
         chunk = packet[offset:offset + 4]
@@ -502,6 +532,7 @@ def packet_memory_map_text(packet: bytes) -> str:
 
 
 def packet_memory_map_markdown(packet: bytes) -> str:
+    """Render the packet PRAM word layout as Markdown."""
     lines = [
         "### Packet Memory Words",
         "",
@@ -520,10 +551,12 @@ def packet_memory_map_markdown(packet: bytes) -> str:
 
 
 def _field_slice(packet: bytes, start: int, size: int) -> bytes:
+    """Return a byte slice used by the packet field map helpers."""
     return packet[start:start + size]
 
 
 def packet_field_map_entries(packet: bytes) -> list[dict[str, str | int]]:
+    """Build structured field-to-byte/PRAM mapping entries for a packet."""
     entries: list[dict[str, str | int]] = []
 
     def add_entry(name: str, start: int, size: int, note: str = "") -> None:
@@ -596,6 +629,7 @@ def packet_field_map_entries(packet: bytes) -> list[dict[str, str | int]]:
 
 
 def packet_field_map_text(packet: bytes) -> str:
+    """Render the packet field map in plain text."""
     lines = ["Packet field map:"]
     for entry in packet_field_map_entries(packet):
         note = f" note={entry['note']}" if entry["note"] else ""
@@ -607,6 +641,7 @@ def packet_field_map_text(packet: bytes) -> str:
 
 
 def packet_field_map_markdown(packet: bytes) -> str:
+    """Render the packet field map as a Markdown table."""
     lines = [
         "### Packet Field Map",
         "",
@@ -623,6 +658,7 @@ def packet_field_map_markdown(packet: bytes) -> str:
 
 
 def program_report_markdown(instructions: Iterable[int]) -> str:
+    """Render the currently loaded BPF program as Markdown."""
     lines = [
         "## BPF Program",
         "",
@@ -639,6 +675,7 @@ def program_report_markdown(instructions: Iterable[int]) -> str:
 
 @dataclass
 class BpfRunResult:
+    """Summary of one DUT execution window."""
     cycles: int
     returned: bool
     accepted: bool
@@ -648,6 +685,8 @@ class BpfRunResult:
 
 
 class BpfPythonTB:
+    """Reusable Python driver for the BPF DUT interface."""
+
     def __init__(
         self,
         dut,
@@ -667,13 +706,16 @@ class BpfPythonTB:
 
     @property
     def current_cycle(self) -> int:
+        """Return the current simulated cycle count."""
         return self._cycle
 
     @property
     def trace_rows(self) -> list[dict[str, int | str]]:
+        """Return a copy of the collected CSV trace rows."""
         return list(self._trace_rows)
 
     def init_signals(self) -> None:
+        """Initialize the DUT input interface to a known idle state."""
         self.dut.bpf_start @= 0
         self.dut.bpf_packet_len @= 0
         self.dut.bpf_packet_loss @= 0
@@ -691,6 +733,7 @@ class BpfPythonTB:
         self._tick()
 
     def _record_trace(self) -> None:
+        """Capture one cycle of DUT-visible state into the trace buffer."""
         row = {
             "cycle": self._cycle,
             "bpf_start": int(self.dut.bpf_start),
@@ -711,6 +754,7 @@ class BpfPythonTB:
         LOGGER.info("cycle=%d return=%d accept=%d ret=0x%08x", row["cycle"], row["bpf_return"], row["bpf_accept"], row["bpf_ret_value"])
 
     def _flush_trace(self) -> None:
+        """Write the in-memory trace buffer to CSV."""
         if not self._trace_rows:
             return
         with self.trace_path.open("w", newline="", encoding="utf-8") as csv_file:
@@ -719,12 +763,14 @@ class BpfPythonTB:
             writer.writerows(self._trace_rows)
 
     def _tick(self, cycles: int = 1) -> None:
+        """Advance simulation and collect trace rows for each cycle."""
         for _ in range(cycles):
             self.dut.sim_tick()
             self._record_trace()
             self._cycle += 1
 
     def write_mmap(self, addr: int, data: int, timeout: int = 20) -> None:
+        """Perform one MMAP write transaction and wait for acknowledgment."""
         self.dut.bpf_mmap_addr @= addr
         self.dut.bpf_mmap_wdata @= data
         self.dut.bpf_mmap_wr @= 1
@@ -739,12 +785,15 @@ class BpfPythonTB:
         self._tick()
 
     def set_packet_loss(self, value: int | bool) -> None:
+        """Drive the packet-loss input signal."""
         self.dut.bpf_packet_loss @= 1 if value else 0
 
     def step(self, cycles: int = 1) -> None:
+        """Advance simulation by a fixed number of cycles."""
         self._tick(cycles)
 
     def read_mmap(self, addr: int, timeout: int = 20) -> int:
+        """Perform one MMAP read transaction and return the read data."""
         self.dut.bpf_mmap_addr @= addr
         self.dut.bpf_mmap_rd @= 1
         self.dut.bpf_mmap_wr @= 0
@@ -760,6 +809,7 @@ class BpfPythonTB:
         return value
 
     def load_packet(self, packet: bytes, base_addr: int = 0) -> None:
+        """Write a packet into PRAM and remember it for reporting."""
         self._loaded_packet = packet
         print(
             "DP packet load: "
@@ -778,6 +828,7 @@ class BpfPythonTB:
             self._tick()
 
     def load_program(self, instructions: Iterable[int], base_addr: int = BPF_IRAM_ADDR) -> None:
+        """Write a packed BPF program into IRAM through MMAP."""
         self._loaded_program = list(instructions)
         for index, instruction in enumerate(self._loaded_program):
             low_word = instruction & 0xFFFFFFFF
@@ -786,16 +837,19 @@ class BpfPythonTB:
             self.write_mmap(base_addr + index * 2 + 1, high_word)
 
     def configure_start_address(self, start_addr: int = 0, enable: bool = True) -> None:
+        """Program the DUT start-address register."""
         value = ((1 if enable else 0) << 31) | ((start_addr & 0x3FF) << 1)
         self.write_mmap(BPF_START_ADDR, value)
 
     def pulse_start(self, cycles: int = 1) -> None:
+        """Pulse the DUT start signal for the requested number of cycles."""
         self.dut.bpf_start @= 1
         self._tick(cycles)
         self.dut.bpf_start @= 0
         self._tick()
 
     def run_until_return(self, max_cycles: int = 200) -> BpfRunResult:
+        """Run until the DUT asserts return or the cycle budget expires."""
         for _ in range(max_cycles):
             if int(self.dut.bpf_return):
                 break
@@ -815,10 +869,15 @@ class BpfPythonTB:
         return result
 
     def _write_report(self, result: BpfRunResult) -> None:
+        """Write the shared Markdown report for the current run snapshot."""
         lines = [
             "# BPF Integration Report",
             "",
-            "## Result",
+            "## Final DUT Run Snapshot",
+            "",
+            "This top section describes the final packet/program state visible to the shared Python testbench.",
+            "For multi-packet or scenario-based tests, this is not the whole-test verdict by itself.",
+            "See any appended summary sections later in the report for test-level pass/fail context, traffic history, counters, and golden-model comparisons.",
             "",
             "| Field | Value |",
             "| --- | --- |",
@@ -836,18 +895,23 @@ class BpfPythonTB:
         result.report_path.write_text("\n".join(lines), encoding="utf-8")
 
     def print_packet_summary(self, packet: bytes) -> None:
+        """Print the decoded packet summary to the console."""
         print(analyze_packet(packet))
 
     def print_packet_memory_map(self, packet: bytes) -> None:
+        """Print the packet PRAM word layout to the console."""
         print(packet_memory_map_text(packet))
 
     def print_packet_field_map(self, packet: bytes) -> None:
+        """Print the packet field map to the console."""
         print(packet_field_map_text(packet))
 
     def print_program(self) -> None:
+        """Print the currently loaded BPF program to the console."""
         print(format_bpf_program(self._loaded_program))
 
     def print_run_result(self, result: BpfRunResult) -> None:
+        """Print a concise summary of one DUT run."""
         print(
             "Run result: "
             f"cycles={result.cycles} returned={result.returned} "

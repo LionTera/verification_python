@@ -1,3 +1,5 @@
+"""Packet-loss test that records a golden model and compares it to the trace."""
+
 from __future__ import annotations
 
 import os
@@ -36,6 +38,7 @@ DEFAULT_RNG_SEED = 0x5EED5EED
 
 
 def _get_positive_int_env(name: str, default: int) -> int:
+    """Read a positive integer override from the environment."""
     raw = os.environ.get(name, "").strip()
     if not raw:
         return default
@@ -46,6 +49,7 @@ def _get_positive_int_env(name: str, default: int) -> int:
 
 
 def load_config() -> TrafficConfig:
+    """Load packet-loss golden-model settings from the environment."""
     return TrafficConfig(
         unique_packets=_get_positive_int_env(UNIQUE_PACKETS_ENV_VAR, DEFAULT_UNIQUE_PACKETS),
         protocol_mode=_get_positive_int_env(PROTOCOL_MODE_ENV_VAR, DEFAULT_PROTOCOL_MODE),
@@ -55,12 +59,14 @@ def load_config() -> TrafficConfig:
 
 
 def _with_wrong_dst_mac(packet: bytes) -> bytes:
+    """Return a copy of a packet with an intentionally wrong destination MAC."""
     updated = bytearray(packet)
     updated[0:6] = bytes.fromhex("001122334455")
     return with_ethernet_fcs(bytes(updated))
 
 
 def build_loss_reason_schedule(config: TrafficConfig) -> list[dict[str, object]]:
+    """Build a deterministic per-packet loss-reason schedule."""
     base_items = generate_configurable_packet_stream(config)
     scheduled: list[dict[str, object]] = []
     for item in base_items:
@@ -103,6 +109,7 @@ def append_loss_golden_report(
     golden_model: GoldenModelTracker,
     actual_loss_cycles: list[int],
 ) -> None:
+    """Append golden-model comparison sections to the report."""
     expected_loss_cycles = golden_model.cycles("loss")
     sections = [
         "",
@@ -167,6 +174,7 @@ def append_loss_golden_report(
 @pytest.mark.integration
 @pytest.mark.slow
 def test_bpf_env_packet_loss_golden_model():
+    """Compare expected packet-loss events against the DUT trace cycle by cycle."""
     if not verilator_available():
         pytest.skip("verilator is not installed")
 

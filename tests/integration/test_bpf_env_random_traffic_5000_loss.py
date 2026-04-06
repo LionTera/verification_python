@@ -1,3 +1,5 @@
+"""Deterministic random-traffic stress test with packet-loss injection."""
+
 from __future__ import annotations
 
 import os
@@ -33,6 +35,7 @@ PROGRESS_INTERVAL_ENV_VAR = "BPF_PACKET_PROGRESS_INTERVAL"
 
 
 def _get_positive_int_env(name: str, default: int) -> int:
+    """Read a positive integer override from the environment."""
     raw = os.environ.get(name, "").strip()
     if not raw:
         return default
@@ -43,6 +46,7 @@ def _get_positive_int_env(name: str, default: int) -> int:
 
 
 def load_stress_config() -> dict[str, int]:
+    """Load and validate the configurable stress-test parameters."""
     packet_count = _get_positive_int_env(PACKET_COUNT_ENV_VAR, DEFAULT_PACKET_COUNT)
     loss_percent = _get_positive_int_env(LOSS_PERCENT_ENV_VAR, DEFAULT_LOSS_PERCENT)
     rng_seed = _get_positive_int_env(RNG_SEED_ENV_VAR, DEFAULT_RNG_SEED)
@@ -62,6 +66,7 @@ def load_stress_config() -> dict[str, int]:
 
 
 def _probe_program(packet: bytes, program: list[int], trace_name: str, *, label: str):
+    """Run a short probe program on one packet to discover field offsets."""
     dut = build_bpf_env(waveform=waveform_path_for_test(Path(trace_name).stem, probe=True))
     tb = BpfPythonTB(dut, trace_path=Path("reports") / trace_name, emit_reports=full_artifacts_enabled())
     tb.init_signals()
@@ -86,6 +91,7 @@ def discover_offset(
     *,
     name: str,
 ) -> int:
+    """Search for the packet byte offset that yields the expected field values."""
     print(f"Probing {name} offsets")
     for offset in candidate_offsets:
         program = [bpf_ldb_abs(offset), bpf_ret_a()]
@@ -113,6 +119,7 @@ def discover_offset(
 
 
 def make_tcp_dst_filter(protocol_offset: int, dst_port_low_offset: int, *, accepted_low_byte: int) -> list[int]:
+    """Build the TCP destination-port filter used by the stress test."""
     return [
         bpf_ldb_abs(protocol_offset),
         bpf_jeq_k(0x06, jt=0, jf=2),
@@ -124,6 +131,7 @@ def make_tcp_dst_filter(protocol_offset: int, dst_port_low_offset: int, *, accep
 
 
 def generate_packet_stream(count: int, *, seed: int) -> list[dict[str, object]]:
+    """Generate a deterministic mixed traffic stream from a seed value."""
     rng = random.Random(seed)
     items: list[dict[str, object]] = []
     for index in range(count):
@@ -188,6 +196,7 @@ def append_random_traffic_report(
     dst_port_low_offset: int,
     config: dict[str, int],
 ) -> None:
+    """Append the random-traffic golden model and summary sections to the report."""
     accept_total = sum(1 for item in traffic_history if item["expected_accept"])
     reject_total = len(traffic_history) - accept_total
     lines = [
@@ -242,6 +251,7 @@ def append_random_traffic_report(
 @pytest.mark.integration
 @pytest.mark.slow
 def test_bpf_env_random_traffic_5000_loss():
+    """Stress the DUT with seeded traffic and deterministic packet-loss injection."""
     if not verilator_available():
         pytest.skip("verilator is not installed")
     config = load_stress_config()

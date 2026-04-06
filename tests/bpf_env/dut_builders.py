@@ -1,3 +1,5 @@
+"""Helpers for constructing the Verilated BPF DUT from Python."""
+
 from __future__ import annotations
 
 import importlib
@@ -38,6 +40,8 @@ FULL_ARTIFACTS_ENV_VAR = "BPF_FULL_ARTIFACTS"
 
 
 class PatchedVerilogImportPass(VerilogVerilatorImportPass):
+    """Recursively import Verilog placeholders throughout the DUT hierarchy."""
+
     def traverse_hierarchy(self, m):
         c = self.__class__
         ph_pass = c.get_placeholder_pass()
@@ -50,6 +54,7 @@ class PatchedVerilogImportPass(VerilogVerilatorImportPass):
 
 
 def _ensure_junction(link: Path, target: Path) -> Path:
+    """Create a Windows junction if it does not already exist."""
     if link.exists():
         return link
     link.parent.mkdir(parents=True, exist_ok=True)
@@ -58,6 +63,7 @@ def _ensure_junction(link: Path, target: Path) -> Path:
 
 
 def _ensure_verilator_cmd(verilator_root: Path) -> Path:
+    """Ensure the expected Verilator launcher exists on Windows."""
     release_dir = verilator_root / "build" / "src" / "Release"
     release_dir.mkdir(parents=True, exist_ok=True)
     exe_path = release_dir / "verilator.exe"
@@ -73,6 +79,7 @@ def _ensure_verilator_cmd(verilator_root: Path) -> Path:
 
 
 def _rewrite_path(path_str: str) -> str:
+    """Rewrite repo paths into import-friendly absolute paths."""
     path_str = _normalize_repo_path(path_str)
     if os.name != "nt":
         return path_str.replace("\\", "/")
@@ -84,6 +91,7 @@ def _rewrite_path(path_str: str) -> str:
 
 
 def _normalize_repo_path(path_str: str) -> str:
+    """Resolve repo-relative path fragments into existing filesystem paths."""
     normalized = Path(path_str)
     if normalized.exists():
         return str(normalized)
@@ -100,6 +108,7 @@ def _normalize_repo_path(path_str: str) -> str:
 
 
 def _prepare_windows_verilator_env() -> None:
+    """Prepare environment variables and DLL search paths for Windows builds."""
     repo_alias = _ensure_junction(REPO_ALIAS, REPO_ROOT)
     verilator_alias = _ensure_junction(VERILATOR_ALIAS, VERILATOR_ROOT)
     verilator_bin_dir = _ensure_verilator_cmd(verilator_alias)
@@ -116,6 +125,7 @@ def _prepare_windows_verilator_env() -> None:
 
 @contextmanager
 def _build_cwd():
+    """Switch into the expected build directory for the duration of the build."""
     prev_cwd = Path.cwd()
     try:
         if os.name == "nt":
@@ -128,22 +138,26 @@ def _build_cwd():
 
 
 def verilator_available() -> bool:
+    """Return True when Verilator is available to the Python flow."""
     if os.name == "nt":
         _prepare_windows_verilator_env()
     return shutil.which("verilator") is not None
 
 
 def waveform_enabled() -> bool:
+    """Return True when waveform dumping is enabled for the current run."""
     value = os.environ.get(WAVEFORM_ENV_VAR, "")
     return value.strip().lower() not in {"", "0", "false", "no", "off"}
 
 
 def full_artifacts_enabled() -> bool:
+    """Return True when full probe artifact retention is enabled."""
     value = os.environ.get(FULL_ARTIFACTS_ENV_VAR, "")
     return value.strip().lower() not in {"", "0", "false", "no", "off"}
 
 
 def waveform_path_for_test(test_name: str, *, probe: bool = False) -> Path | None:
+    """Choose the waveform base path for a test or probe run."""
     if not waveform_enabled():
         return None
     safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", test_name).strip("._")
@@ -155,6 +169,7 @@ def waveform_path_for_test(test_name: str, *, probe: bool = False) -> Path | Non
 
 
 def _cleanup_pymtl_artifacts() -> None:
+    """Remove stale PyMTL translation/import outputs before rebuilding."""
     for pattern in (
         "BpfEnv*_pickled.v",
         "BpfEnv*_pickled.v.tmp",
@@ -173,6 +188,7 @@ def _cleanup_pymtl_artifacts() -> None:
 
 
 def _sanitize_translated_verilog(dut) -> None:
+    """Normalize translated Verilog line directives for downstream tools."""
     candidates = sorted(Path(".").glob("BpfEnv*_pickled.v"))
     if not candidates:
         return
@@ -189,6 +205,7 @@ def _sanitize_translated_verilog(dut) -> None:
 
 
 def _set_translation_metadata(dut) -> None:
+    """Point PyMTL metadata at the translated Verilog file and top module."""
     candidates = sorted(Path(".").glob("BpfEnv*_pickled.v"))
     if not candidates:
         return
@@ -201,6 +218,7 @@ def _set_translation_metadata(dut) -> None:
 
 
 def _patch_imported_wrapper_vcd(vcd_path: Path) -> None:
+    """Patch the generated wrapper so Verilator writes to the requested VCD."""
     candidates = sorted(Path(".").glob("BpfEnv*_v.py"))
     if not candidates:
         return
@@ -226,6 +244,7 @@ def _patch_imported_wrapper_vcd(vcd_path: Path) -> None:
 
 
 def _reload_imported_dut(dut):
+    """Reload the imported DUT wrapper after patching it on disk."""
     module_name = dut.__class__.__module__
     class_name = dut.__class__.__name__
     dut.finalize()
@@ -239,6 +258,7 @@ def _reload_imported_dut(dut):
 
 
 def build_bpf_env(*, waveform: str | os.PathLike[str] | None = None):
+    """Build and return an imported BpfEnv DUT instance."""
     if not verilator_available():
         raise RuntimeError("verilator is required for VerilogTranslationImportPass")
 

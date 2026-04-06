@@ -1,3 +1,5 @@
+"""Long-program test that combines a larger BPF program with packet loss."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -19,6 +21,7 @@ from tests.bpf_env.packets import make_tcp_packet, make_udp_packet
 
 
 def run_program(packet: bytes, program: list[int], trace_name: str, *, label: str):
+    """Run one packet/program pair and return a configured Python TB."""
     is_probe = Path(trace_name).stem.startswith("bpf_probe_")
     dut = build_bpf_env(waveform=waveform_path_for_test(Path(trace_name).stem, probe=is_probe))
     tb = BpfPythonTB(
@@ -45,6 +48,7 @@ def discover_offset(
     *,
     name: str,
 ) -> int:
+    """Search for the packet byte offset that yields the expected field values."""
     print(f"Probing {name} offsets")
     for offset in candidate_offsets:
         probe_program = [bpf_ldb_abs(offset), bpf_ret_a()]
@@ -89,6 +93,7 @@ def make_long_learning_program(
     ack_low_offset: int,
     payload_first_offset: int,
 ) -> list[int]:
+    """Build a longer multi-step program for learning/debug coverage."""
     return [
         bpf_ldb_abs(protocol_offset),
         bpf_jeq_k(0x06, jt=1, jf=0),
@@ -115,6 +120,7 @@ def make_long_learning_program(
 @pytest.mark.integration
 @pytest.mark.slow
 def test_bpf_env_long_program_with_packet_loss():
+    """Run a longer program and verify behavior with packet-loss signaling."""
     if not verilator_available():
         pytest.skip("verilator is not installed")
 

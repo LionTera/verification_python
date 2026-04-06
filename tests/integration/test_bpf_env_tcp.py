@@ -1,3 +1,5 @@
+"""Basic TCP packet execution test for the Python-driven BPF environment."""
+
 from __future__ import annotations
 
 from pathlib import Path

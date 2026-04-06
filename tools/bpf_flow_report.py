@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Generate a simple textual report of the BPF RTL module flow."""
+
 import argparse
 import re
 from collections import defaultdict

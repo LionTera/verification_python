@@ -1,3 +1,5 @@
+"""Shared helpers for event-based golden models in Python tests."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -7,6 +9,7 @@ from typing import Iterable
 
 @dataclass(frozen=True)
 class GoldenEvent:
+    """One expected event in a test-level golden model."""
     event_type: str
     cycle: int
     reason: str
@@ -20,19 +23,24 @@ class GoldenEvent:
 
 
 def collect_signal_cycles(trace_rows: Iterable[dict[str, int | str]], signal_name: str) -> list[int]:
+    """Return all cycles where the given trace signal is asserted."""
     return [int(row["cycle"]) for row in trace_rows if int(row[signal_name]) == 1]
 
 
 class GoldenModelTracker:
+    """Track expected events and their running counters."""
+
     def __init__(self) -> None:
         self._events: list[GoldenEvent] = []
         self._counter_by_type: dict[str, int] = {}
 
     @property
     def events(self) -> list[GoldenEvent]:
+        """Return a copy of the recorded golden events."""
         return list(self._events)
 
     def count(self, event_type: str) -> int:
+        """Return the current expected count for an event type."""
         return self._counter_by_type.get(event_type, 0)
 
     def record(
@@ -48,6 +56,7 @@ class GoldenModelTracker:
         start_cycle: int | None = None,
         end_cycle: int | None = None,
     ) -> GoldenEvent:
+        """Record an expected event and advance its event counter."""
         expected_counter = self.count(event_type) + 1
         event = GoldenEvent(
             event_type=event_type,
@@ -66,9 +75,11 @@ class GoldenModelTracker:
         return event
 
     def cycles(self, event_type: str) -> list[int]:
+        """Return the expected cycle list for one event type."""
         return [event.cycle for event in self._events if event.event_type == event_type]
 
     def compare_cycles(self, actual_cycles: list[int], event_type: str) -> None:
+        """Assert that actual cycles match the golden model exactly."""
         expected_cycles = self.cycles(event_type)
         assert actual_cycles == expected_cycles, (
             f"{event_type} cycle mismatch: expected={expected_cycles} actual={actual_cycles}"
@@ -81,6 +92,7 @@ def event_cycles_comparison_markdown(
     expected_cycles: list[int],
     actual_cycles: list[int],
 ) -> str:
+    """Render a Markdown table comparing expected and actual cycles."""
     lines = [
         f"## {title}",
         "",
@@ -103,6 +115,7 @@ def golden_events_markdown(
     title: str,
     events: Iterable[GoldenEvent],
 ) -> str:
+    """Render a Markdown table listing golden events."""
     lines = [
         f"## {title}",
         "",
@@ -119,5 +132,6 @@ def golden_events_markdown(
 
 
 def append_markdown_sections(report_path: Path, sections: Iterable[str]) -> None:
+    """Append Markdown sections to an existing report file."""
     with report_path.open("a", encoding="utf-8") as report_file:
         report_file.write("\n".join(sections))

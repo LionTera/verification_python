@@ -1,3 +1,5 @@
+"""Packet memory map test for verifying PRAM word layout reporting."""
+
 from __future__ import annotations
 
 from pathlib import Path

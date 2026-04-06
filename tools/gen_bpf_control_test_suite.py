@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Generate a pytest control test suite from the BPF control wrapper."""
+
 import argparse
 from pathlib import Path
 

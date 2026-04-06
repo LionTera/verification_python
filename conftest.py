@@ -1,3 +1,11 @@
+"""Pytest configuration for the BPF verification environment.
+
+This module registers CLI knobs for waveform dumping, reports, traffic sizing,
+deterministic seeds, and per-run artifact IDs. Selected CLI options are also
+mirrored into environment variables so the shared helpers can consume one
+consistent configuration source.
+"""
+
 from __future__ import annotations
 
 import os
@@ -5,6 +13,7 @@ from datetime import datetime
 
 
 def pytest_addoption(parser):
+    """Register BPF-specific pytest command-line options."""
     group = parser.getgroup("bpf")
     group.addoption(
         "--bpf-waveform",
@@ -75,6 +84,7 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
+    """Publish selected pytest options into environment variables."""
     mappings = (
         ("--bpf-waveform", "BPF_WAVEFORM", "1"),
         ("--bpf-reports", "BPF_REPORTS", "1"),

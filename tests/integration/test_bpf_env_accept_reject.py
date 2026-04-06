@@ -1,3 +1,5 @@
+"""Acceptance and rejection behavior tests for simple `ret k` programs."""
+
 from __future__ import annotations
 
 from pathlib import Path

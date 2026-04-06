@@ -1,3 +1,5 @@
+"""Ingress-model test for CRC, MAC, ethertype, and length-based drops."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -33,6 +35,7 @@ EXPECTED_DST_MAC = bytes.fromhex("020000000002")
 
 
 def _probe_program(packet: bytes, program: list[int], trace_name: str, *, label: str):
+    """Run a short probe program on one packet to discover field offsets."""
     dut = build_bpf_env(waveform=waveform_path_for_test(Path(trace_name).stem, probe=True))
     tb = BpfPythonTB(dut, trace_path=Path("reports") / trace_name, emit_reports=False)
     tb.init_signals()
@@ -57,6 +60,7 @@ def discover_offset(
     *,
     name: str,
 ) -> int:
+    """Search for the packet byte offset that yields the expected field values."""
     print(f"Probing {name} offsets")
     for offset in candidate_offsets:
         program = [bpf_ldb_abs(offset), bpf_ret_a()]
@@ -79,6 +83,7 @@ def discover_offset(
 
 
 def make_tcp_dst_filter(protocol_offset: int, dst_port_low_offset: int, *, accepted_low_byte: int) -> list[int]:
+    """Build the TCP destination-port filter used after ingress checks."""
     return [
         bpf_ldb_abs(protocol_offset),
         bpf_jeq_k(0x06, jt=0, jf=2),
@@ -97,6 +102,7 @@ def append_ingress_report(
     protocol_offset: int,
     dst_port_low_offset: int,
 ) -> None:
+    """Append ingress-model summary sections to the main report."""
     lines = [
         "",
         "## Ingress Drop Model",
@@ -161,6 +167,7 @@ def append_ingress_report(
 @pytest.mark.integration
 @pytest.mark.slow
 def test_bpf_env_ingress_drop_model():
+    """Verify ingress drops and BPF decisions across a mixed packet set."""
     if not verilator_available():
         pytest.skip("verilator is not installed")
 

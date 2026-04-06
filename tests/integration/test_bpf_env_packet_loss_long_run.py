@@ -1,3 +1,5 @@
+"""Long-run packet-loss counter stress test."""
+
 from __future__ import annotations
 
 from pathlib import Path
