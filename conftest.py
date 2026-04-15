@@ -81,6 +81,51 @@ def pytest_addoption(parser):
         default=None,
         help="Optional artifact run ID suffix. If omitted, a timestamp-based run ID is generated per pytest run.",
     )
+    group.addoption(
+        "--bpf-randomize-fields",
+        action="store",
+        default=None,
+        help=(
+            "Comma-separated packet fields to randomize deterministically in configurable-generator flows "
+            "(for example: ttl,dscp_ecn,payload_len,payload_bytes,tcp_flags)."
+        ),
+    )
+    group.addoption(
+        "--bpf-payload-len-min",
+        action="store",
+        default=None,
+        help="Minimum randomized payload length for configurable-generator flows.",
+    )
+    group.addoption(
+        "--bpf-payload-len-max",
+        action="store",
+        default=None,
+        help="Maximum randomized payload length for configurable-generator flows.",
+    )
+    group.addoption(
+        "--bpf-program-randomness",
+        action="store",
+        default=None,
+        help="Generated-program request randomness level: low, medium, or high.",
+    )
+    group.addoption(
+        "--bpf-program-ttl-min",
+        action="store",
+        default=None,
+        help="Minimum TTL threshold for generated-program request tests.",
+    )
+    group.addoption(
+        "--bpf-program-tcp-flags-mask",
+        action="store",
+        default=None,
+        help="TCP flags bitmask for generated-program request tests, for example 0x02.",
+    )
+    group.addoption(
+        "--bpf-program-min-packet-len",
+        action="store",
+        default=None,
+        help="Minimum packet length for generated-program request tests.",
+    )
 
 
 def pytest_configure(config):
@@ -97,6 +142,13 @@ def pytest_configure(config):
         ("--bpf-protocol-mode", "BPF_PROTOCOL_MODE", None),
         ("--bpf-error-level", "BPF_ERROR_LEVEL", None),
         ("--bpf-run-id", "BPF_RUN_ID", None),
+        ("--bpf-randomize-fields", "BPF_RANDOMIZE_FIELDS", None),
+        ("--bpf-payload-len-min", "BPF_PAYLOAD_LEN_MIN", None),
+        ("--bpf-payload-len-max", "BPF_PAYLOAD_LEN_MAX", None),
+        ("--bpf-program-randomness", "BPF_PROGRAM_RANDOMNESS", None),
+        ("--bpf-program-ttl-min", "BPF_PROGRAM_TTL_MIN", None),
+        ("--bpf-program-tcp-flags-mask", "BPF_PROGRAM_TCP_FLAGS_MASK", None),
+        ("--bpf-program-min-packet-len", "BPF_PROGRAM_MIN_PACKET_LEN", None),
     )
     for option_name, env_name, forced_value in mappings:
         option_value = config.getoption(option_name)

@@ -33,6 +33,9 @@ class BpfEnv( Component, VerilogPlaceholder ):
         s.bpf_pram_bank_rx = InPort( Bits2 )
         s.bpf_pram_bank_bpf = InPort( Bits2 )
         s.bpf_pram_bank_tx = InPort( Bits2 )
+        s.bpf_acc = OutPort( Bits32 )
+        s.bpf_pc = OutPort( Bits32 )
+        s.bpf_x = OutPort( Bits32 )
         s.tb_cycle_counter = OutPort( Bits32 )
 
         base = abspath( join( dirname(__file__), "..", ".." ) )

@@ -22,6 +22,7 @@ from pathlib import Path
 
 import pytest
 
+from tests.bpf_env.artifacts import unique_artifact_path
 from tests.bpf_env.bpf_python_tb import (
     BPF_A,
     BPF_ABS,
@@ -186,6 +187,21 @@ class OpcodeCase:
     expected_ret: int
 
 
+@dataclass(frozen=True)
+class OpcodeCaseOutcome:
+    """Recorded outcome for one opcode-suite case."""
+
+    name: str
+    expected_ret: int
+    actual_ret: int
+    returned: bool
+    accepted: bool
+    expected_accept: bool
+    passed: bool
+    trace_path: Path
+    report_path: Path
+
+
 PACKET = make_tcp_packet(
     dst_mac=bytes.fromhex("aabbccddeeff"),
     src_mac=bytes.fromhex("112233445566"),
@@ -250,6 +266,67 @@ CASES = [
 ]
 
 
+SUITE_RESULTS: list[OpcodeCaseOutcome] = []
+SUITE_REPORT_PATH = unique_artifact_path(Path("reports") / "bpf_opcode_execution_suite.md")
+
+
+def _write_suite_report() -> None:
+    """Write a suite-level Markdown summary for the opcode execution run."""
+    if not SUITE_RESULTS:
+        return
+
+    passed = sum(1 for item in SUITE_RESULTS if item.passed)
+    failed = len(SUITE_RESULTS) - passed
+    failed_rows = [item for item in SUITE_RESULTS if not item.passed]
+
+    lines = [
+        "# BPF Opcode Execution Suite",
+        "",
+        "## Summary",
+        "",
+        f"- Total cases: `{len(SUITE_RESULTS)}`",
+        f"- Passed cases: `{passed}`",
+        f"- Failed cases: `{failed}`",
+        "",
+        "## Case Results",
+        "",
+        "| Case | Returned | Expected Ret | Actual Ret | Expected Accept | Actual Accept | Passed | Trace | Report |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for item in SUITE_RESULTS:
+        lines.append(
+            f"| `{item.name}` | `{item.returned}` | `0x{item.expected_ret:08x}` | `0x{item.actual_ret:08x}` | "
+            f"`{item.expected_accept}` | `{item.accepted}` | `{item.passed}` | `{item.trace_path}` | `{item.report_path}` |"
+        )
+
+    lines.extend(["", "## Failed Cases", ""])
+    if not failed_rows:
+        lines.append("All opcode-suite cases passed.")
+    else:
+        lines.extend(
+            [
+                "| Case | Failure Detail |",
+                "| --- | --- |",
+            ]
+        )
+        for item in failed_rows:
+            lines.append(
+                f"| `{item.name}` | `expected ret=0x{item.expected_ret:08x}, actual ret=0x{item.actual_ret:08x}, "
+                f"expected accept={item.expected_accept}, actual accept={item.accepted}, returned={item.returned}` |"
+            )
+
+    SUITE_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    SUITE_REPORT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _opcode_suite_report_fixture():
+    """Emit the suite-level summary after all parameterized cases finish."""
+    SUITE_RESULTS.clear()
+    yield
+    _write_suite_report()
+
+
 def _run_case(case: OpcodeCase):
     """Run one opcode case end to end on the DUT."""
     dut = build_bpf_env(waveform=waveform_path_for_test(f"test_bpf_env_opcode_{case.name}"))
@@ -274,10 +351,29 @@ def test_bpf_env_opcode_execution_suite(case: OpcodeCase):
         pytest.skip("verilator is not installed")
 
     result = _run_case(case)
+    expected_accept = case.expected_ret != 0
+    passed = (
+        result.returned
+        and result.ret_value == case.expected_ret
+        and result.accepted == expected_accept
+    )
+    SUITE_RESULTS.append(
+        OpcodeCaseOutcome(
+            name=case.name,
+            expected_ret=case.expected_ret,
+            actual_ret=result.ret_value,
+            returned=result.returned,
+            accepted=result.accepted,
+            expected_accept=expected_accept,
+            passed=passed,
+            trace_path=result.trace_path,
+            report_path=result.report_path,
+        )
+    )
 
     assert result.returned
     assert result.ret_value == case.expected_ret
-    assert result.accepted == (case.expected_ret != 0)
+    assert result.accepted == expected_accept
     if reports_enabled():
         assert result.trace_path.exists()
         assert result.report_path.exists()

@@ -31,6 +31,7 @@ from tests.bpf_env.packet_generator import EXPECTED_DST_MAC, TrafficConfig, gene
 UNIQUE_PACKETS_ENV_VAR = "BPF_UNIQUE_PACKETS"
 PROTOCOL_MODE_ENV_VAR = "BPF_PROTOCOL_MODE"
 RNG_SEED_ENV_VAR = "BPF_PACKET_RNG_SEED"
+RANDOMIZE_FIELDS_ENV_VAR = "BPF_RANDOMIZE_FIELDS"
 
 DEFAULT_UNIQUE_PACKETS = 24
 DEFAULT_PROTOCOL_MODE = 3
@@ -55,6 +56,9 @@ def load_config() -> TrafficConfig:
         protocol_mode=_get_positive_int_env(PROTOCOL_MODE_ENV_VAR, DEFAULT_PROTOCOL_MODE),
         error_level=1,
         seed=_get_positive_int_env(RNG_SEED_ENV_VAR, DEFAULT_RNG_SEED),
+        randomize_fields=tuple(
+            field.strip() for field in os.environ.get(RANDOMIZE_FIELDS_ENV_VAR, "").split(",") if field.strip()
+        ),
     )
 
 
@@ -118,6 +122,7 @@ def append_loss_golden_report(
         f"- Unique packets: `{config.unique_packets}`",
         f"- Protocol mode: `{config.protocol_mode}`",
         f"- RNG seed: `0x{config.seed:08x}`",
+        f"- Randomized fields: `{', '.join(config.randomize_fields) or 'none'}`",
         f"- Expected loss count: `{len(expected_loss_cycles)}`",
         f"- Actual loss count: `{len(actual_loss_cycles)}`",
         f"- Loss cycle match: `{expected_loss_cycles == actual_loss_cycles}`",

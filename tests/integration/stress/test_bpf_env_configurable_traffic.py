@@ -35,6 +35,7 @@ UNIQUE_PACKETS_ENV_VAR = "BPF_UNIQUE_PACKETS"
 PROTOCOL_MODE_ENV_VAR = "BPF_PROTOCOL_MODE"
 ERROR_LEVEL_ENV_VAR = "BPF_ERROR_LEVEL"
 RNG_SEED_ENV_VAR = "BPF_PACKET_RNG_SEED"
+RANDOMIZE_FIELDS_ENV_VAR = "BPF_RANDOMIZE_FIELDS"
 
 DEFAULT_UNIQUE_PACKETS = 32
 DEFAULT_PROTOCOL_MODE = 3
@@ -60,6 +61,9 @@ def load_config() -> TrafficConfig:
         protocol_mode=_get_positive_int_env(PROTOCOL_MODE_ENV_VAR, DEFAULT_PROTOCOL_MODE),
         error_level=_get_positive_int_env(ERROR_LEVEL_ENV_VAR, DEFAULT_ERROR_LEVEL),
         seed=_get_positive_int_env(RNG_SEED_ENV_VAR, DEFAULT_RNG_SEED),
+        randomize_fields=tuple(
+            field.strip() for field in os.environ.get(RANDOMIZE_FIELDS_ENV_VAR, "").split(",") if field.strip()
+        ),
     )
 
 
@@ -146,6 +150,7 @@ def append_configurable_report(
         f"- Protocol mode: `{config.protocol_mode}`",
         f"- Error level: `{config.error_level}`",
         f"- RNG seed: `0x{config.seed:08x}`",
+        f"- Randomized fields: `{', '.join(config.randomize_fields) or 'none'}`",
         f"- Protocol offset used by filter: `{protocol_offset}`",
         f"- Destination-port low-byte offset used by filter: `{dst_port_low_offset}`",
         "",

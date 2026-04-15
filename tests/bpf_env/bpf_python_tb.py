@@ -673,6 +673,31 @@ def program_report_markdown(instructions: Iterable[int]) -> str:
     return "\n".join(lines)
 
 
+def register_snapshot_markdown(*, acc: int, pc: int, x_reg: int) -> str:
+    """Render a final register snapshot for the current DUT run."""
+    lines = [
+        "## Register Snapshot",
+        "",
+        "| Register | Value |",
+        "| --- | --- |",
+        f"| A / ACC | `0x{acc:08x}` |",
+        f"| X | `0x{x_reg:08x}` |",
+        f"| PC | `0x{pc:08x}` |",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def register_snapshot_text(*, acc: int, pc: int, x_reg: int) -> str:
+    """Render a one-block console view of the current register snapshot."""
+    return (
+        "Register snapshot:\n"
+        f"  A / ACC = 0x{acc:08x}\n"
+        f"  X       = 0x{x_reg:08x}\n"
+        f"  PC      = 0x{pc:08x}"
+    )
+
+
 @dataclass
 class BpfRunResult:
     """Summary of one DUT execution window."""
@@ -747,6 +772,9 @@ class BpfPythonTB:
             "bpf_pram_waddr": int(self.dut.bpf_pram_waddr),
             "bpf_pram_wr": int(self.dut.bpf_pram_wr),
             "bpf_pram_raddr": int(self.dut.bpf_pram_raddr),
+            "bpf_acc": int(self.dut.bpf_acc),
+            "bpf_pc": int(self.dut.bpf_pc),
+            "bpf_x": int(self.dut.bpf_x),
             "tb_cycle_counter": int(self.dut.tb_cycle_counter),
         }
         row.update(packet_csv_fields(self._loaded_packet))
@@ -887,6 +915,11 @@ class BpfPythonTB:
             f"| Return Value | `0x{result.ret_value:08x}` |",
             f"| CSV Trace | `{result.trace_path}` |",
             "",
+            register_snapshot_markdown(
+                acc=int(self.dut.bpf_acc),
+                pc=int(self.dut.bpf_pc),
+                x_reg=int(self.dut.bpf_x),
+            ),
             packet_report_markdown(self._loaded_packet),
             packet_field_map_markdown(self._loaded_packet),
             packet_memory_map_markdown(self._loaded_packet),
@@ -909,6 +942,16 @@ class BpfPythonTB:
     def print_program(self) -> None:
         """Print the currently loaded BPF program to the console."""
         print(format_bpf_program(self._loaded_program))
+
+    def print_register_snapshot(self) -> None:
+        """Print the current A/X/PC snapshot to the console."""
+        print(
+            register_snapshot_text(
+                acc=int(self.dut.bpf_acc),
+                pc=int(self.dut.bpf_pc),
+                x_reg=int(self.dut.bpf_x),
+            )
+        )
 
     def print_run_result(self, result: BpfRunResult) -> None:
         """Print a concise summary of one DUT run."""

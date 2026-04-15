@@ -33,11 +33,11 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
 
 TEST_OPTIONS = {
-    "Configurable Traffic": "tests/integration/test_bpf_env_configurable_traffic.py",
-    "Packet Loss Golden Model": "tests/integration/test_bpf_env_packet_loss_golden_model.py",
-    "Random Traffic 5000 Loss": "tests/integration/test_bpf_env_random_traffic_5000_loss.py",
-    "Long Program With Packet Loss": "tests/integration/test_bpf_env_long_program_with_packet_loss.py",
-    "Ingress Drop Model": "tests/integration/test_bpf_env_ingress_drop_model.py",
+    "Configurable Traffic": "tests/integration/stress/test_bpf_env_configurable_traffic.py",
+    "Packet Loss Golden Model": "tests/integration/advanced/test_bpf_env_packet_loss_golden_model.py",
+    "Random Traffic 5000 Loss": "tests/integration/stress/test_bpf_env_random_traffic_5000_loss.py",
+    "Long Program With Packet Loss": "tests/integration/advanced/test_bpf_env_long_program_with_packet_loss.py",
+    "Ingress Drop Model": "tests/integration/advanced/test_bpf_env_ingress_drop_model.py",
 }
 
 PROTOCOL_MODE_OPTIONS = {
@@ -55,11 +55,11 @@ ERROR_LEVEL_OPTIONS = {
 TEST_METADATA = {
     "Configurable Traffic": {
         "subtitle": "Configurable packet generation with protocol and error selection.",
-        "fields": {"unique_packets", "protocol_mode", "error_level", "seed"},
+        "fields": {"unique_packets", "protocol_mode", "error_level", "seed", "randomize_fields"},
     },
     "Packet Loss Golden Model": {
         "subtitle": "Golden-model loss schedule with deterministic traffic and waveform correlation.",
-        "fields": {"unique_packets", "protocol_mode", "seed"},
+        "fields": {"unique_packets", "protocol_mode", "seed", "randomize_fields"},
     },
     "Random Traffic 5000 Loss": {
         "subtitle": "Long randomized traffic stress run with deterministic loss injection.",
@@ -213,6 +213,16 @@ class BpfVerificationWindow(QMainWindow):
         self.run_id_edit.setToolTip("Optional artifact suffix so reports and waveforms are easier to identify later.")
         self._add_form_row(layout, "run_id", "Run ID", self.run_id_edit)
 
+        self.randomize_fields_edit = QLineEdit("")
+        self.randomize_fields_edit.setPlaceholderText("ttl,dscp_ecn,payload_len,payload_bytes,tcp_flags")
+        self.randomize_fields_edit.textChanged.connect(self._update_command_preview)
+        self.randomize_fields_edit.setToolTip(
+            "Comma-separated packet fields to randomize deterministically. "
+            "Useful fields: length, payload_len, payload_bytes, ttl, dscp_ecn, src_ip, dst_ip, "
+            "identification, flags_fragment, src_port, seq, ack, tcp_flags, tcp_window, ip_protocol."
+        )
+        self._add_form_row(layout, "randomize_fields", "Randomize Fields", self.randomize_fields_edit)
+
         shell_layout.addWidget(group)
 
         runtime_group = QGroupBox("Artifacts And Runtime")
@@ -352,6 +362,7 @@ class BpfVerificationWindow(QMainWindow):
 
         seed_value = self.seed_edit.text().strip() or "0x1234"
         run_id = self.run_id_edit.text().strip()
+        randomize_fields = self.randomize_fields_edit.text().strip()
 
         test_path = self._selected_test_path()
         if test_path.endswith("test_bpf_env_random_traffic_5000_loss.py"):
@@ -389,6 +400,9 @@ class BpfVerificationWindow(QMainWindow):
                     seed_value,
                 ]
             )
+
+        if randomize_fields:
+            parts.extend(["--bpf-randomize-fields", randomize_fields])
 
         if run_id:
             parts.extend(["--bpf-run-id", run_id])
@@ -449,7 +463,7 @@ class BpfVerificationWindow(QMainWindow):
 
     def _generator_command_parts(self) -> list[str]:
         seed_value = self.seed_edit.text().strip() or "0x1234"
-        return [
+        parts = [
             "python",
             "-m",
             "tests.bpf_env.packet_generator",
@@ -464,6 +478,10 @@ class BpfVerificationWindow(QMainWindow):
             "--show-limit",
             str(self.generator_limit_spin.value()),
         ]
+        randomize_fields = self.randomize_fields_edit.text().strip()
+        if randomize_fields:
+            parts.extend(["--randomize-fields", randomize_fields])
+        return parts
 
     def _show_generator_command(self) -> None:
         self.activity_tabs.setCurrentIndex(0)

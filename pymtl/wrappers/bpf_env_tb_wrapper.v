@@ -30,6 +30,9 @@ module bpf_env_tb_wrapper
     input       [1:0]            bpf_pram_bank_rx,
     input       [1:0]            bpf_pram_bank_bpf,
     input       [1:0]            bpf_pram_bank_tx,
+    output      [31:0]           bpf_acc,
+    output      [31:0]           bpf_pc,
+    output      [31:0]           bpf_x,
     output reg  [31:0]           tb_cycle_counter
 );
 
@@ -72,5 +75,9 @@ u_bpf_env
     .bpf_pram_bank_bpf(bpf_pram_bank_bpf),
     .bpf_pram_bank_tx(bpf_pram_bank_tx)
 );
+
+assign bpf_acc = u_bpf_env.bpf_npu.bpf_acc;
+assign bpf_pc  = u_bpf_env.bpf_npu.bpf_pc;
+assign bpf_x   = u_bpf_env.bpf_npu.bpf_dp.x_reg;
 
 endmodule

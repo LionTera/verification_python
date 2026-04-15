@@ -20,6 +20,8 @@ File:
   - build a named sequence of packets
 - `random_packet_stream(...)`
   - deterministic random TCP/UDP traffic generation
+- `generate_configurable_packet_stream(...)`
+  - configurable packet generation with protocol/error selection and optional field randomization
 
 ## Example
 
@@ -58,9 +60,30 @@ Use the generator when:
 - a test needs many packet variants
 - you want a named packet sequence
 - you want deterministic random traffic from one seed
+- you want selected fields randomized while keeping the run reproducible
 - you want test inputs described as data rather than handwritten packet calls
 
 Use the existing packet builders when:
 
 - a test only needs one or two simple packets
 - inline `make_tcp_packet(...)` is already clear enough
+
+## User-Selected Randomization
+
+The configurable generator accepts a comma-separated field list that tells it what to randomize.
+
+Example:
+
+```bash
+python -m tests.bpf_env.packet_generator \
+  --unique-packets 10 \
+  --protocol-mode 3 \
+  --error-level 2 \
+  --seed 0x1234 \
+  --randomize-fields ttl,dscp_ecn,payload_len,payload_bytes,tcp_flags \
+  --show-limit 10
+```
+
+The detailed field list, valid value ranges, and filtering implications are documented in:
+
+- [PACKET_RANDOMIZATION_GUIDE.md](/abs/path/c:/Users/Lionn%20Bruckstein/Documents/verification_python/docs_md/PACKET_RANDOMIZATION_GUIDE.md)

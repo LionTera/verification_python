@@ -199,6 +199,11 @@ python -m pytest tests/integration/test_bpf_env_packet_loss_golden_model.py -s \
 
 What it does:
 
+- runs a trivial BPF program so the test isolates packet-loss behavior from filter complexity
+- current program:
+  - `ret #1`
+- raw program word:
+  - `0x0006000000000001`
 - creates a deterministic golden model of packet-loss events before running the DUT
 - mixes realistic loss reasons:
   - bad CRC
@@ -208,6 +213,23 @@ What it does:
 - runs the DUT and extracts the actual `bpf_packet_loss` cycles from the trace
 - compares expected loss cycles against actual waveform-visible loss cycles
 - appends a report table you can use to cross-check the waveform
+
+Large-run example:
+
+```bash
+python -m pytest tests/integration/test_bpf_env_packet_loss_golden_model.py -s \
+  --bpf-reports \
+  --bpf-waveform \
+  --bpf-unique-packets 400 \
+  --bpf-protocol-mode 3 \
+  --bpf-packet-rng-seed 0x1234
+```
+
+Reproducibility note:
+
+- if you rerun with the same unique-packet count, protocol mode, and RNG seed, the golden-model event schedule should remain the same
+- expected packet types, expected loss reasons, and expected loss cycles should remain stable unless the test code changes
+- artifact filenames differ per run because each pytest run now gets a unique run ID suffix
 
 ### `test_bpf_env_long_program_with_packet_loss.py`
 
@@ -276,6 +298,11 @@ Supported knobs:
 - `--bpf-packet-rng-seed`
 - `--bpf-progress-interval`
 
+Reproducibility note:
+
+- if you rerun with the same packet count, packet-loss percent, and RNG seed, the generated traffic stream and golden-model reference should remain the same
+- artifact filenames differ per run because each pytest run now gets a unique run ID suffix
+
 ### `test_bpf_env_configurable_traffic.py`
 
 Run:
@@ -310,6 +337,11 @@ Supported knobs:
   - `2` = CRC errors plus packet loss
 - `--bpf-packet-rng-seed`
   - deterministic generation seed
+
+Reproducibility note:
+
+- if you rerun with the same unique-packet count, protocol mode, error level, and RNG seed, the generated traffic should remain deterministic across runs
+- artifact filenames differ per run because each pytest run now gets a unique run ID suffix
 
 ## Packet Generator Only
 

@@ -22,21 +22,27 @@ def make_tcp_packet(
     dst_mac: bytes = b"\x02\x00\x00\x00\x00\x02",
     src_ip: str = "192.168.1.10",
     dst_ip: str = "192.168.1.20",
+    dscp_ecn: int = 0,
+    identification: int = 0x1234,
+    flags_fragment: int = 0x4000,
+    ttl: int = 64,
+    ip_options: bytes = b"",
     src_port: int = 1234,
     dst_port: int = 80,
     seq: int = 1,
     ack: int = 0,
     flags: int = 0x02,
+    window: int = 4096,
     payload: bytes = b"",
 ) -> bytes:
     """Build an Ethernet + IPv4 + TCP packet with valid checksums."""
+    if len(ip_options) % 4:
+        raise ValueError("ip_options length must be a multiple of 4 bytes")
+
     eth_type = b"\x08\x00"
-    version_ihl = 0x45
-    dscp_ecn = 0
-    total_length = 20 + 20 + len(payload)
-    identification = 0x1234
-    flags_fragment = 0x4000
-    ttl = 64
+    ihl_words = 5 + (len(ip_options) // 4)
+    version_ihl = (4 << 4) | ihl_words
+    total_length = ihl_words * 4 + 20 + len(payload)
     protocol = 6
     src_ip_bytes = ipaddress.ip_address(src_ip).packed
     dst_ip_bytes = ipaddress.ip_address(dst_ip).packed
@@ -62,7 +68,7 @@ def make_tcp_packet(
     tcp_header[8:12] = ack.to_bytes(4, "big")
     tcp_header[12] = data_offset << 4
     tcp_header[13] = flags
-    tcp_header[14:16] = (4096).to_bytes(2, "big")
+    tcp_header[14:16] = window.to_bytes(2, "big")
     tcp_header[16:18] = b"\x00\x00"
     tcp_header[18:20] = b"\x00\x00"
 
@@ -84,23 +90,28 @@ def make_udp_packet(
     dst_mac: bytes = b"\x02\x00\x00\x00\x00\x02",
     src_ip: str = "192.168.1.10",
     dst_ip: str = "192.168.1.20",
+    dscp_ecn: int = 0,
+    identification: int = 0x1234,
+    flags_fragment: int = 0x4000,
+    ttl: int = 64,
+    ip_options: bytes = b"",
     src_port: int = 1234,
     dst_port: int = 80,
     payload: bytes = b"",
 ) -> bytes:
     """Build an Ethernet + IPv4 + UDP packet with valid checksums."""
+    if len(ip_options) % 4:
+        raise ValueError("ip_options length must be a multiple of 4 bytes")
+
     eth_type = b"\x08\x00"
-    version_ihl = 0x45
-    dscp_ecn = 0
-    total_length = 20 + 8 + len(payload)
-    identification = 0x1234
-    flags_fragment = 0x4000
-    ttl = 64
+    ihl_words = 5 + (len(ip_options) // 4)
+    version_ihl = (4 << 4) | ihl_words
+    total_length = ihl_words * 4 + 8 + len(payload)
     protocol = 17
     src_ip_bytes = ipaddress.ip_address(src_ip).packed
     dst_ip_bytes = ipaddress.ip_address(dst_ip).packed
 
-    ipv4_header = bytearray(20)
+    ipv4_header = bytearray(ihl_words * 4)
     ipv4_header[0] = version_ihl
     ipv4_header[1] = dscp_ecn
     ipv4_header[2:4] = total_length.to_bytes(2, "big")
@@ -111,6 +122,8 @@ def make_udp_packet(
     ipv4_header[10:12] = b"\x00\x00"
     ipv4_header[12:16] = src_ip_bytes
     ipv4_header[16:20] = dst_ip_bytes
+    if ip_options:
+        ipv4_header[20:] = ip_options
     ipv4_header[10:12] = _checksum(bytes(ipv4_header)).to_bytes(2, "big")
 
     udp_header = bytearray(8)
