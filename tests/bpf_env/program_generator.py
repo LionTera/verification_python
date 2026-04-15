@@ -407,7 +407,7 @@ def _build_program(request: ProgramRequest, offsets: dict[str, int]) -> list[int
     if request.require_tcp:
         checks.append([
             bpf_ldb_abs(offsets["protocol"]),
-            bpf_jeq_k(0x06, jt=0, jf=1),
+            bpf_jeq_k(0x06, jt=1, jf=0),
             bpf_ret_k(0),
         ])
 
@@ -415,7 +415,7 @@ def _build_program(request: ProgramRequest, offsets: dict[str, int]) -> list[int
         assert request.min_packet_len is not None
         checks.append([
             _ld_len(),
-            _jge_k(request.min_packet_len, jt=0, jf=1),
+            _jge_k(request.min_packet_len, jt=1, jf=0),
             bpf_ret_k(0),
         ])
 
@@ -424,7 +424,7 @@ def _build_program(request: ProgramRequest, offsets: dict[str, int]) -> list[int
         derived_min_len = 54 + request.min_payload_len
         checks.append([
             _ld_len(),
-            _jge_k(derived_min_len, jt=0, jf=1),
+            _jge_k(derived_min_len, jt=1, jf=0),
             bpf_ret_k(0),
         ])
 
@@ -433,7 +433,7 @@ def _build_program(request: ProgramRequest, offsets: dict[str, int]) -> list[int
             assert request.ttl_min is not None
             checks.append([
                 bpf_ldb_abs(offsets["ttl"]),
-                _jge_k(request.ttl_min, jt=0, jf=1),
+                _jge_k(request.ttl_min, jt=1, jf=0),
                 bpf_ret_k(0),
             ])
         elif request.ttl_mode == "eq_any":
@@ -447,7 +447,7 @@ def _build_program(request: ProgramRequest, offsets: dict[str, int]) -> list[int
         checks.append([
             bpf_ldb_abs(offsets["dscp"]),
             _alu_and_k(request.dscp_mask),
-            bpf_jeq_k(request.dscp_value, jt=0, jf=1),
+            bpf_jeq_k(request.dscp_value, jt=1, jf=0),
             bpf_ret_k(0),
         ])
 
@@ -455,7 +455,7 @@ def _build_program(request: ProgramRequest, offsets: dict[str, int]) -> list[int
         assert request.tcp_flags_mask is not None
         checks.append([
             bpf_ldb_abs(offsets["tcp_flags"]),
-            _jset_k(request.tcp_flags_mask, jt=0, jf=1),
+            _jset_k(request.tcp_flags_mask, jt=1, jf=0),
             bpf_ret_k(0),
         ])
 
@@ -463,7 +463,7 @@ def _build_program(request: ProgramRequest, offsets: dict[str, int]) -> list[int
         assert request.dst_port_low is not None
         checks.append([
             bpf_ldb_abs(offsets["dst_port_low"]),
-            bpf_jeq_k(request.dst_port_low, jt=0, jf=1),
+            bpf_jeq_k(request.dst_port_low, jt=1, jf=0),
             bpf_ret_k(0),
         ])
 
@@ -472,11 +472,11 @@ def _build_program(request: ProgramRequest, offsets: dict[str, int]) -> list[int
         required_len = _canonical_header_len(request.payload_byte_index)
         checks.append([
             _ld_len(),
-            _jge_k(required_len, jt=0, jf=1),
+            _jge_k(required_len, jt=1, jf=0),
             bpf_ret_k(0),
             _ldxb_msh(offsets["version_ihl"]),
             _ldb_ind(offsets["payload_marker_rel"]),
-            _jset_k(request.payload_bit_mask, jt=0, jf=1),
+            _jset_k(request.payload_bit_mask, jt=1, jf=0),
             bpf_ret_k(0),
         ])
 
