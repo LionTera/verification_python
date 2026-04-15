@@ -269,17 +269,18 @@ def test_bpf_env_generated_program_request():
 
         assert result.returned
         assert result.accepted == expected_accept
+        return_cycle = result.cycles - 1
 
         golden_model.record(
             event_type="accept" if expected_accept else "reject",
-            cycle=result.cycles,
+            cycle=return_cycle,
             reason="request_driven",
             item_index=int(item["index"]),
             entered_bpf=True,
             name=str(item["name"]),
             protocol=str(spec.l4),
             start_cycle=None,
-            end_cycle=result.cycles,
+            end_cycle=return_cycle,
         )
         history.append(
             {
@@ -290,6 +291,7 @@ def test_bpf_env_generated_program_request():
                 "expected_accept": expected_accept,
                 "actual_accept": result.accepted,
                 "ret_value": result.ret_value,
+                "return_cycle": return_cycle,
                 "acc": int(tb.dut.bpf_acc),
                 "x_reg": int(tb.dut.bpf_x),
                 "pc": int(tb.dut.bpf_pc),
