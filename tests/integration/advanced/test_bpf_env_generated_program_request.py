@@ -11,6 +11,7 @@ from tests.bpf_env.bpf_python_tb import (
     BpfPythonTB,
     bpf_ldb_abs,
     bpf_ret_a,
+    full_artifacts_enabled,
     program_report_markdown,
     reports_enabled,
 )
@@ -49,6 +50,8 @@ PROGRAM_MIN_PACKET_LEN_ENV_VAR = "BPF_PROGRAM_MIN_PACKET_LEN"
 DEFAULT_UNIQUE_PACKETS = 24
 DEFAULT_PROTOCOL_MODE = 3
 DEFAULT_RNG_SEED = 0x5EED5EED
+REQUEST_ARTIFACT_DIR = Path("reports") / "generated_program_request"
+REQUEST_PROBE_DIR = REQUEST_ARTIFACT_DIR / "probes"
 
 
 def _get_positive_int_env(name: str, default: int) -> int:
@@ -73,6 +76,31 @@ def _get_nonnegative_int_env(name: str, default: int) -> int:
 
 def _get_randomize_fields_env() -> tuple[str, ...]:
     return tuple(field.strip() for field in os.environ.get(RANDOMIZE_FIELDS_ENV_VAR, "").split(",") if field.strip())
+
+
+def _artifact_path(name: str) -> Path:
+    return REQUEST_ARTIFACT_DIR / name
+
+
+def _probe_artifact_path(name: str) -> Path:
+    return REQUEST_PROBE_DIR / name
+
+
+def _format_tcp_flags(flags: int | None, protocol: str) -> str:
+    if protocol != "tcp" or flags is None:
+        return "-"
+    names = [
+        (0x80, "CWR"),
+        (0x40, "ECE"),
+        (0x20, "URG"),
+        (0x10, "ACK"),
+        (0x08, "PSH"),
+        (0x04, "RST"),
+        (0x02, "SYN"),
+        (0x01, "FIN"),
+    ]
+    selected = [name for mask, name in names if flags & mask]
+    return ",".join(selected) if selected else "0"
 
 
 def load_traffic_config() -> TrafficConfig:
@@ -109,7 +137,11 @@ def load_program_request() -> ProgramRequest:
 
 def _probe_program(packet: bytes, program: list[int], trace_name: str, *, label: str):
     dut = build_bpf_env(waveform=waveform_path_for_test(Path(trace_name).stem, probe=True))
-    tb = BpfPythonTB(dut, trace_path=Path("reports") / trace_name)
+    tb = BpfPythonTB(
+        dut,
+        trace_path=_probe_artifact_path(trace_name),
+        emit_reports=full_artifacts_enabled(),
+    )
     tb.init_signals()
     print(label)
     tb.load_packet(packet)
@@ -130,13 +162,13 @@ def discover_offset(probe: FieldProbe, *, profile_name: str) -> int:
         result_a = _probe_program(
             probe.packet_a,
             program,
-            f"bpf_probe_generated_request_{profile_name}_{probe.name}_a_off_{offset}.csv",
+            f"probe_{profile_name}_{probe.name}_packet_a_off_{offset}.csv",
             label=f"Probe generated request {profile_name} {probe.name} offset {offset} packet A",
         )
         result_b = _probe_program(
             probe.packet_b,
             program,
-            f"bpf_probe_generated_request_{profile_name}_{probe.name}_b_off_{offset}.csv",
+            f"probe_{profile_name}_{probe.name}_packet_b_off_{offset}.csv",
             label=f"Probe generated request {profile_name} {probe.name} offset {offset} packet B",
         )
         if result_a.ret_value == probe.expected_a and result_b.ret_value == probe.expected_b:
@@ -205,14 +237,16 @@ def append_request_report(
             golden_events_markdown(title="Golden Accept/Reject Events", events=golden_model.events),
             "## Packet Results",
             "",
-            "| Index | Name | Protocol | Packet Length | Expected Accept | Actual Accept | Return Value | ACC | X | PC |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+            "| Index | Name | Kind | Protocol | TTL | TCP Flags | Src IP | Dst IP | Src Port | Dst Port | Payload Len | Packet Length | Return Cycle | Expected Accept | Actual Accept | Return Value | ACC | X | PC |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
         ]
     )
     for item in history:
         sections.append(
-            f"| `{item['index']}` | `{item['name']}` | `{item['protocol']}` | `{item['packet_length']}` | "
-            f"`{item['expected_accept']}` | `{item['actual_accept']}` | `0x{item['ret_value']:08x}` | "
+            f"| `{item['index']}` | `{item['name']}` | `{item['kind']}` | `{item['protocol']}` | "
+            f"`{item['ttl']}` | `{item['tcp_flags']}` | `{item['src_ip']}` | `{item['dst_ip']}` | "
+            f"`{item['src_port']}` | `{item['dst_port']}` | `{item['payload_len']}` | `{item['packet_length']}` | "
+            f"`{item['return_cycle']}` | `{item['expected_accept']}` | `{item['actual_accept']}` | `0x{item['ret_value']:08x}` | "
             f"`0x{item['acc']:08x}` | `0x{item['x_reg']:08x}` | `0x{item['pc']:08x}` |"
         )
     append_markdown_sections(report_path, sections)
@@ -246,7 +280,7 @@ def test_bpf_env_generated_program_request():
     program = build_profile_program(request_profile, final_offsets)
 
     dut = build_bpf_env(waveform=waveform_path_for_test("test_bpf_env_generated_program_request"))
-    tb = BpfPythonTB(dut, trace_path=Path("reports") / "bpf_generated_program_request.csv")
+    tb = BpfPythonTB(dut, trace_path=_artifact_path("generated_program_request.csv"))
     tb.init_signals()
     tb.load_program(program)
     tb.print_program()
@@ -286,7 +320,15 @@ def test_bpf_env_generated_program_request():
             {
                 "index": int(item["index"]),
                 "name": str(item["name"]),
+                "kind": str(item["metadata"].get("kind", "-")),
                 "protocol": spec.l4,
+                "ttl": int(spec.ttl),
+                "tcp_flags": _format_tcp_flags(getattr(spec, "flags", None), spec.l4),
+                "src_ip": str(spec.src_ip),
+                "dst_ip": str(spec.dst_ip),
+                "src_port": int(spec.src_port),
+                "dst_port": int(spec.dst_port),
+                "payload_len": len(spec.payload),
                 "packet_length": len(packet),
                 "expected_accept": expected_accept,
                 "actual_accept": result.accepted,

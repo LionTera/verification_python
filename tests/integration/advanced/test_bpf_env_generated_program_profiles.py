@@ -21,6 +21,7 @@ from tests.bpf_env.bpf_python_tb import (
     BpfPythonTB,
     bpf_ldb_abs,
     bpf_ret_a,
+    full_artifacts_enabled,
     program_report_markdown,
     reports_enabled,
 )
@@ -50,6 +51,7 @@ RANDOMIZE_FIELDS_ENV_VAR = "BPF_RANDOMIZE_FIELDS"
 DEFAULT_UNIQUE_PACKETS = 24
 DEFAULT_PROTOCOL_MODE = 3
 DEFAULT_RNG_SEED = 0x5EED5EED
+PROFILES_ARTIFACT_ROOT = Path("reports") / "generated_program_profiles"
 
 
 def _get_positive_int_env(name: str, default: int) -> int:
@@ -66,6 +68,35 @@ def _get_positive_int_env(name: str, default: int) -> int:
 def _get_randomize_fields_env() -> tuple[str, ...]:
     """Read the selected randomization field list from the environment."""
     return tuple(field.strip() for field in os.environ.get(RANDOMIZE_FIELDS_ENV_VAR, "").split(",") if field.strip())
+
+
+def _profile_artifact_dir(profile_name: str) -> Path:
+    return PROFILES_ARTIFACT_ROOT / profile_name
+
+
+def _profile_artifact_path(profile_name: str, name: str) -> Path:
+    return _profile_artifact_dir(profile_name) / name
+
+
+def _profile_probe_artifact_path(profile_name: str, name: str) -> Path:
+    return _profile_artifact_dir(profile_name) / "probes" / name
+
+
+def _format_tcp_flags(flags: int | None, protocol: str) -> str:
+    if protocol != "tcp" or flags is None:
+        return "-"
+    names = [
+        (0x80, "CWR"),
+        (0x40, "ECE"),
+        (0x20, "URG"),
+        (0x10, "ACK"),
+        (0x08, "PSH"),
+        (0x04, "RST"),
+        (0x02, "SYN"),
+        (0x01, "FIN"),
+    ]
+    selected = [name for mask, name in names if flags & mask]
+    return ",".join(selected) if selected else "0"
 
 
 def _merge_randomize_fields(*groups: tuple[str, ...]) -> tuple[str, ...]:
@@ -92,7 +123,11 @@ def load_config_for_profile(profile_name: str, *, recommended_randomize_fields: 
 def _probe_program(packet: bytes, program: list[int], trace_name: str, *, label: str):
     """Run a short probe program on one packet to discover one field offset."""
     dut = build_bpf_env(waveform=waveform_path_for_test(Path(trace_name).stem, probe=True))
-    tb = BpfPythonTB(dut, trace_path=Path("reports") / trace_name)
+    tb = BpfPythonTB(
+        dut,
+        trace_path=Path(trace_name),
+        emit_reports=full_artifacts_enabled(),
+    )
     tb.init_signals()
     print(label)
     tb.load_packet(packet)
@@ -113,13 +148,13 @@ def discover_offset(probe: FieldProbe, *, profile_name: str) -> int:
         result_a = _probe_program(
             probe.packet_a,
             program,
-            f"bpf_probe_generated_{profile_name}_{probe.name}_a_off_{offset}.csv",
+            str(_profile_probe_artifact_path(profile_name, f"probe_{probe.name}_packet_a_off_{offset}.csv")),
             label=f"Probe {profile_name} {probe.name} offset {offset} packet A",
         )
         result_b = _probe_program(
             probe.packet_b,
             program,
-            f"bpf_probe_generated_{profile_name}_{probe.name}_b_off_{offset}.csv",
+            str(_profile_probe_artifact_path(profile_name, f"probe_{probe.name}_packet_b_off_{offset}.csv")),
             label=f"Probe {profile_name} {probe.name} offset {offset} packet B",
         )
         if result_a.ret_value == probe.expected_a and result_b.ret_value == probe.expected_b:
@@ -191,15 +226,17 @@ def append_profile_report(
             golden_events_markdown(title="Golden Accept/Reject Events", events=golden_model.events),
             "## Packet Results",
             "",
-            "| Index | Name | Protocol | Expected Accept | Actual Accept | Return Value | ACC | X | PC | Packet Length |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+            "| Index | Name | Kind | Protocol | TTL | TCP Flags | Src IP | Dst IP | Src Port | Dst Port | Payload Len | Packet Length | Return Cycle | Expected Accept | Actual Accept | Return Value | ACC | X | PC |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
         ]
     )
     for item in history:
         sections.append(
-            f"| `{item['index']}` | `{item['name']}` | `{item['protocol']}` | `{item['expected_accept']}` | "
-            f"`{item['actual_accept']}` | `0x{item['ret_value']:08x}` | `0x{item['acc']:08x}` | "
-            f"`0x{item['x_reg']:08x}` | `0x{item['pc']:08x}` | `{item['packet_length']}` |"
+            f"| `{item['index']}` | `{item['name']}` | `{item['kind']}` | `{item['protocol']}` | "
+            f"`{item['ttl']}` | `{item['tcp_flags']}` | `{item['src_ip']}` | `{item['dst_ip']}` | "
+            f"`{item['src_port']}` | `{item['dst_port']}` | `{item['payload_len']}` | `{item['packet_length']}` | "
+            f"`{item['return_cycle']}` | `{item['expected_accept']}` | `{item['actual_accept']}` | `0x{item['ret_value']:08x}` | "
+            f"`0x{item['acc']:08x}` | `0x{item['x_reg']:08x}` | `0x{item['pc']:08x}` |"
         )
     append_markdown_sections(report_path, sections)
 
@@ -223,7 +260,10 @@ def test_bpf_env_generated_program_profiles(profile):
     program = build_profile_program(profile, final_offsets)
 
     dut = build_bpf_env(waveform=waveform_path_for_test(f"test_bpf_env_generated_program_profiles_{profile.name}"))
-    tb = BpfPythonTB(dut, trace_path=Path("reports") / f"bpf_generated_program_{profile.name}.csv")
+    tb = BpfPythonTB(
+        dut,
+        trace_path=_profile_artifact_path(profile.name, f"generated_program_{profile.name}.csv"),
+    )
     tb.init_signals()
     tb.load_program(program)
     tb.print_program()
@@ -264,7 +304,15 @@ def test_bpf_env_generated_program_profiles(profile):
             {
                 "index": int(item["index"]),
                 "name": str(item["name"]),
+                "kind": str(item["metadata"].get("kind", "-")),
                 "protocol": spec.l4,
+                "ttl": int(spec.ttl),
+                "tcp_flags": _format_tcp_flags(getattr(spec, "flags", None), spec.l4),
+                "src_ip": str(spec.src_ip),
+                "dst_ip": str(spec.dst_ip),
+                "src_port": int(spec.src_port),
+                "dst_port": int(spec.dst_port),
+                "payload_len": len(spec.payload),
                 "packet_length": len(packet),
                 "expected_accept": expected_accept,
                 "actual_accept": result.accepted,
