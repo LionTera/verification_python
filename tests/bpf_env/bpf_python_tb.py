@@ -720,10 +720,11 @@ class BpfPythonTB:
         emit_reports: bool | None = None,
     ):
         self.dut = dut
-        self.trace_path = unique_artifact_path(trace_path)
-        self.trace_path.parent.mkdir(parents=True, exist_ok=True)
-        self.report_path = self.trace_path.with_suffix(".md")
         self.emit_reports = reports_enabled() if emit_reports is None else emit_reports
+        self.trace_path = unique_artifact_path(trace_path)
+        self.report_path = self.trace_path.with_suffix(".md")
+        if self.emit_reports:
+            self.trace_path.parent.mkdir(parents=True, exist_ok=True)
         self._cycle = 0
         self._trace_rows: list[dict[str, int]] = []
         self._loaded_program: list[int] = []
