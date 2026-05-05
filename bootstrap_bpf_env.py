@@ -3,45 +3,20 @@ import argparse
 import json
 import re
 import shutil
+import sys
 from collections import defaultdict
 from pathlib import Path
 from textwrap import dedent
 
-COMMENT_SL_RE = re.compile(r"//.*?$", re.M)
-COMMENT_ML_RE = re.compile(r"/\*.*?\*/", re.S)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-MODULE_BLOCK_RE = re.compile(
-    r"\bmodule\s+([A-Za-z_][A-Za-z0-9_$]*)\b(.*?)\bendmodule\b",
-    re.S,
+from tools.verilog_parser import (  # noqa: E402
+    build_module_db,
+    camel_case,
+    find_verilog_files,
+    IMPLICIT_PYMTL_PORTS,
+    width_to_bits_name,
 )
-
-HEADER_RE = re.compile(
-    r"\bmodule\s+([A-Za-z_][A-Za-z0-9_$]*)\s*(?:#\s*\(.*?\))?\s*\((.*?)\)\s*;",
-    re.S,
-)
-
-PORT_RE = re.compile(
-    r"^\s*(input|output|inout)\s+"
-    r"(?:(?:wire|reg|logic|signed)\s+)*"
-    r"(?:\[\s*([^:\]]+)\s*:\s*([^\]]+)\s*\]\s+)?"
-    r"([A-Za-z_][A-Za-z0-9_$]*)\s*$"
-)
-
-PARAM_RE = re.compile(
-    r"\bmodule\s+([A-Za-z_][A-Za-z0-9_$]*)\s*#\s*\((.*?)\)\s*\(",
-    re.S,
-)
-
-PARAM_ITEM_RE = re.compile(
-    r"parameter\s+([A-Za-z_][A-Za-z0-9_$]*)\s*=\s*([^,\n)]+)"
-)
-
-INSTANTIATION_RE = re.compile(
-    r"\b([A-Za-z_][A-Za-z0-9_$]*)\s*(?:#\s*\(.*?\))?\s+([A-Za-z_][A-Za-z0-9_$]*)\s*\(",
-    re.S,
-)
-
-IMPLICIT_PYMTL_PORTS = {"clk", "reset"}
 
 ROLE_RULES = {
     "top": ["top", "npu", "core", "engine"],
@@ -450,84 +425,6 @@ if __name__ == "__main__":
 """)
 
 
-def strip_comments(text: str) -> str:
-    text = COMMENT_ML_RE.sub("", text)
-    text = COMMENT_SL_RE.sub("", text)
-    return text
-
-
-def camel_case(name: str) -> str:
-    return "".join(part.capitalize() for part in name.split("_"))
-
-
-def find_verilog_files(folder: Path):
-    files = []
-    for ext in ("*.v", "*.sv"):
-        files.extend(folder.rglob(ext))
-    return sorted([f for f in files if f.is_file()])
-
-
-def parse_modules_from_file(path: Path):
-    text = strip_comments(path.read_text(encoding="utf-8", errors="ignore"))
-    return [(m.group(1), m.group(0)) for m in MODULE_BLOCK_RE.finditer(text)]
-
-
-def parse_ports(module_text: str, module_name: str):
-    for m in HEADER_RE.finditer(module_text):
-        if m.group(1) != module_name:
-            continue
-        raw_ports = [p.strip() for p in m.group(2).split(",") if p.strip()]
-        ports = []
-        for raw in raw_ports:
-            raw = " ".join(raw.split())
-            pm = PORT_RE.match(raw)
-            if not pm:
-                continue
-            direction, msb, lsb, name = pm.groups()
-            width_expr = "1" if msb is None else f"{msb.strip()}:{lsb.strip()}"
-            ports.append({
-                "direction": direction,
-                "name": name,
-                "width_expr": width_expr,
-            })
-        return ports
-    return []
-
-
-def parse_params(module_text: str, module_name: str):
-    out = []
-    for m in PARAM_RE.finditer(module_text):
-        if m.group(1) != module_name:
-            continue
-        blob = m.group(2)
-        for pm in PARAM_ITEM_RE.finditer(blob):
-            pname, pval = pm.groups()
-            out.append((pname, pval.strip().rstrip(",")))
-        break
-    return out
-
-
-def build_module_db(rtl_dir: Path):
-    db = {}
-    for vf in find_verilog_files(rtl_dir):
-        for mod_name, mod_text in parse_modules_from_file(vf):
-            db[mod_name] = {
-                "file": vf,
-                "text": mod_text,
-                "ports": parse_ports(mod_text, mod_name),
-                "params": parse_params(mod_text, mod_name),
-                "children": [],
-            }
-    known = set(db.keys())
-    for mod_name, info in db.items():
-        for m in INSTANTIATION_RE.finditer(info["text"]):
-            child = m.group(1)
-            inst = m.group(2)
-            if child in known:
-                info["children"].append((child, inst))
-    return db
-
-
 def build_parent_map(db):
     parents = defaultdict(list)
     for mod, info in db.items():
@@ -588,25 +485,6 @@ def score_top_candidate(mod_name: str, info: dict, parents: dict) -> int:
         score -= 50
 
     return score
-
-
-def width_to_bits_name(width_expr: str):
-    if width_expr == "1":
-        return "Bits1", 1
-
-    mm = re.match(r"(\d+)\s*:\s*(\d+)", width_expr)
-    if mm:
-        a = int(mm.group(1))
-        b = int(mm.group(2))
-        w = abs(a - b) + 1
-        return f"Bits{w}", w
-
-    mm = re.match(r"([A-Za-z_][A-Za-z0-9_$]*)\s*-\s*1\s*:\s*0", width_expr)
-    if mm:
-        pname = mm.group(1)
-        return pname, None
-
-    return "Bits1", 1
 
 
 def guess_default_param_value(pval: str):
@@ -888,6 +766,14 @@ def recreate_environment(repo_root: Path, rtl_dir: Path):
     target_tb = repo_root / "tb"
     reports_dir = repo_root / "reports"
 
+    # Preserve committed tool files before wiping the tools directory.
+    _PRESERVED_TOOLS = ("verilog_parser.py", "gen_pymtl_wrapper.py")
+    preserved = {}
+    for fname in _PRESERVED_TOOLS:
+        p = target_tools / fname
+        if p.exists():
+            preserved[fname] = p.read_text(encoding="utf-8")
+
     safe_rmtree(target_wrappers)
     safe_rmtree(target_tools)
     safe_rmtree(target_tb)
@@ -904,7 +790,11 @@ def recreate_environment(repo_root: Path, rtl_dir: Path):
     )
 
     target_tools.mkdir(parents=True, exist_ok=True)
-    write_text(target_tools / "gen_pymtl_wrapper.py", TOOL_GEN_WRAPPERS, executable=True)
+    for fname in _PRESERVED_TOOLS:
+        if fname in preserved:
+            write_text(target_tools / fname, preserved[fname], executable=(fname == "gen_pymtl_wrapper.py"))
+    if "gen_pymtl_wrapper.py" not in preserved:
+        write_text(target_tools / "gen_pymtl_wrapper.py", TOOL_GEN_WRAPPERS, executable=True)
     write_text(target_tools / "analyze_bpf_design.py", TOOL_ANALYZE, executable=True)
     write_text(target_tools / "bpf_flow_report.py", TOOL_FLOW, executable=True)
     write_text(target_tools / "build_bpf_implementation.py", TOOL_BUILD_IMPL, executable=True)

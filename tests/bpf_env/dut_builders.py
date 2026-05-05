@@ -25,11 +25,12 @@ from tests.bpf_env.artifacts import unique_artifact_base
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VERILATOR_ROOT = REPO_ROOT / "verilator"
-PUBLIC_ROOT = Path("C:/Users/Public")
+PUBLIC_ROOT = Path(os.environ.get("VP_PUBLIC_ROOT", "C:/Users/Public"))
 REPO_ALIAS = PUBLIC_ROOT / "vp_repo"
 VERILATOR_ALIAS = PUBLIC_ROOT / "vp_verilator"
-MSYS2_UCRT_BIN = Path("C:/msys64/ucrt64/bin")
-DLL_DIR_HANDLES = []
+MSYS2_UCRT_BIN = Path(os.environ.get("VP_MSYS2_UCRT_BIN", "C:/msys64/ucrt64/bin"))
+# Maps path string -> handle returned by os.add_dll_directory(); kept alive for process lifetime.
+_dll_dir_handles: dict[str, object] = {}
 REPO_PATH_MARKERS = (
     "bpf_test",
     "pymtl",
@@ -117,8 +118,9 @@ def _prepare_windows_verilator_env() -> None:
     extra_paths = [str(verilator_bin_dir)]
     if MSYS2_UCRT_BIN.exists():
         extra_paths.append(str(MSYS2_UCRT_BIN))
-        if hasattr(os, "add_dll_directory"):
-            DLL_DIR_HANDLES.append(os.add_dll_directory(str(MSYS2_UCRT_BIN)))
+        key = str(MSYS2_UCRT_BIN)
+        if hasattr(os, "add_dll_directory") and key not in _dll_dir_handles:
+            _dll_dir_handles[key] = os.add_dll_directory(key)
     os.environ["PATH"] = ";".join(extra_paths + [os.environ["PATH"]])
     os.chdir(repo_alias)
 
