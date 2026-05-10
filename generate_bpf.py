@@ -1041,44 +1041,44 @@ def _cov_unified() -> list[int]:
     prog += [bpf_alu_k(BPF_LSH, 1)]     # A = 20
     prog += [bpf_alu_k(BPF_RSH, 2)]     # A = 5
     prog += [bpf_alu_k(BPF_MOD, 3)]     # A = 2
-    prog += [bpf_neg()]                  # A = 0xFFFFFFFE
-    prog += [bpf_alu_k(BPF_AND, 0xFF)]  # A = 0xFE
+    prog += [bpf_neg()]                  # A = 0xFFFFFFFD  (hw neg = ~A, one's complement)
+    prog += [bpf_alu_k(BPF_AND, 0xFF)]  # A = 0xFD
 
     # ── SECTION 5: JAL / JRA subroutine ──────────────────────────────────
     # Save A before jal overwrites it with the return address.
     # Layout:  jal → subroutine(jra) → return-point(ld M[]) → ja-skip → ...
-    prog += [bpf_st_mem(5)]             # M[5] = 0xFE  (save)
+    prog += [bpf_st_mem(5)]             # M[5] = 0xFD  (save)
     jal_idx = len(prog)
     prog += [bpf_jal(2)]                # jal +2: A=ret_pc, jump to subroutine (+2 ahead)
-    prog += [bpf_ld_mem(5)]             # return landing: A = 0xFE
+    prog += [bpf_ld_mem(5)]             # return landing: A = 0xFD
     prog += [bpf_ja(1)]                 # ja +1: skip over subroutine body
     prog += [bpf_jra()]                 # subroutine body: jra → return to A=ret_pc
     # Execution: jal→jra→ld M[5]→ja→ (continues)
-    # A = 0xFE after this section
+    # A = 0xFD after this section
 
     # ── SECTION 6: Conditional jumps with K immediate ────────────────────
-    # A = 0xFE throughout this section
-    prog += [bpf_jeq_k(0xFE, jt=1, jf=0)]   # 0xFE == 0xFE → skip
+    # A = 0xFD throughout this section
+    prog += [bpf_jeq_k(0xFD, jt=1, jf=0)]   # 0xFD == 0xFD → skip
     prog += [bpf_ret_k(0)]
-    prog += [_jge_k(0xFE, jt=1, jf=0)]       # 0xFE >= 0xFE → skip
+    prog += [_jge_k(0xFD, jt=1, jf=0)]       # 0xFD >= 0xFD → skip
     prog += [bpf_ret_k(0)]
-    prog += [bpf_jgt_k(0xFD, jt=1, jf=0)]   # 0xFE >  0xFD → skip
+    prog += [bpf_jgt_k(0xFC, jt=1, jf=0)]   # 0xFD >  0xFC → skip
     prog += [bpf_ret_k(0)]
-    prog += [_jset_k(0x08, jt=1, jf=0)]      # 0xFE & 0x08 = 8 ≠ 0 → skip
+    prog += [_jset_k(0x08, jt=1, jf=0)]      # 0xFD & 0x08 = 8 ≠ 0 → skip
     prog += [bpf_ret_k(0)]
 
     # ── SECTION 7: Conditional jumps with X register ─────────────────────
-    prog += [bpf_ldx_imm(0xFE)]
-    prog += [bpf_jeq_x(jt=1, jf=0)]          # 0xFE == X=0xFE → skip
+    prog += [bpf_ldx_imm(0xFD)]
+    prog += [bpf_jeq_x(jt=1, jf=0)]          # 0xFD == X=0xFD → skip
+    prog += [bpf_ret_k(0)]
+    prog += [bpf_ldx_imm(0xFC)]
+    prog += [bpf_jgt_x(jt=1, jf=0)]          # 0xFD >  X=0xFC → skip
     prog += [bpf_ret_k(0)]
     prog += [bpf_ldx_imm(0xFD)]
-    prog += [bpf_jgt_x(jt=1, jf=0)]          # 0xFE >  X=0xFD → skip
-    prog += [bpf_ret_k(0)]
-    prog += [bpf_ldx_imm(0xFE)]
-    prog += [bpf_jge_x(jt=1, jf=0)]          # 0xFE >= X=0xFE → skip
+    prog += [bpf_jge_x(jt=1, jf=0)]          # 0xFD >= X=0xFD → skip
     prog += [bpf_ret_k(0)]
     prog += [bpf_ldx_imm(0x08)]
-    prog += [bpf_jset_x(jt=1, jf=0)]         # 0xFE & X=0x08 = 8 ≠ 0 → skip
+    prog += [bpf_jset_x(jt=1, jf=0)]         # 0xFD & X=0x08 = 8 ≠ 0 → skip
     prog += [bpf_ret_k(0)]
 
     # ── SECTION 8: Backwards jump (countdown loop) ───────────────────────
