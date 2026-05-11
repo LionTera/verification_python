@@ -71,12 +71,23 @@ def test_bpf_coverage_unified():
     tb = BpfPythonTB(dut, trace_path=Path("reports") / "bpf_coverage_unified.csv")
 
     tb.init_signals()
+
+    print("\n--- Packet ---")
+    tb.print_packet_summary(_PACKET)
+    tb.print_packet_field_map(_PACKET)
+
     tb.load_packet(_PACKET)
+
+    print("\n--- Program ---")
     tb.load_program(program)
+    tb.print_program()
+
+    print("\n--- Run ---")
     tb.configure_start_address(0)
     tb.pulse_start()
     result = tb.run_until_return(max_cycles=_MAX_CYCLES)
     tb.print_run_result(result)
+    tb.print_register_snapshot()
 
     # Program must complete before the cycle budget runs out
     assert result.returned, (
